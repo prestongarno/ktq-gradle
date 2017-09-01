@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" tests="7" skipped="0" failures="0" errors="0" timestamp="2017-09-01T15:46:16" hostname="archlinux" time="0.097">
+  <properties/>
+  <testcase name="fieldParsingTestAllOptions" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.089"/>
+  <testcase name="fieldInputWithDirective" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.001"/>
+  <testcase name="fieldListNonNullable" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.0"/>
+  <testcase name="fieldListWithDirective" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.0"/>
+  <testcase name="fieldBasic" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.0"/>
+  <testcase name="multipleFields" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.003"/>
+  <testcase name="fieldListNullable" classname="com.prestongarno.transpiler.tests.parsing.statements.MemberDeclarationParseTests" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

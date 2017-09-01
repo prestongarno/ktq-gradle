@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.prestongarno.transpiler.tests.parsing.GithubApiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2017-09-01T15:46:16" hostname="archlinux" time="0.892">
+  <properties/>
+  <testcase name="userTypeDeclarationTest" classname="com.prestongarno.transpiler.tests.parsing.GithubApiTest" time="0.082"/>
+  <testcase name="schemaTest" classname="com.prestongarno.transpiler.tests.parsing.GithubApiTest" time="0.809"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

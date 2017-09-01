@@ -1,0 +1,54 @@
+group 'com.prestongarno'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+  compile 'com.squareup:kotlinpoet:0.4.0'
+  compile 'com.prestongarno.ktq:client:0.1'
+  compile gradleApi()
+}
+
+jar {
+  manifest {
+    attributes(
+      'Manifest-Version': '1.0'
+      'implementation-class': 'com.prestongarno.ktq.Plugin'
+    )
+  }
+}
+
+task integrationTest(type: Test) {
+  options {
+    systemProperties System.getProperties() as Map<String, ?>
+    //noinspection GroovyAssignabilityCheck
+    systemProperties.put("-Dcom.prestongarno.ktq.compiler.writeTestFiles", "true")
+  }
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src/main/java']
+    }
+    resources {
+      srcDirs = ['src/main/res']
+    }
+  }
+  test {
+    java {
+      srcDirs = ['src/test/java']
+    }
+    resources {
+      srcDirs = ['src/test/res']
+    }
+  }
+}
