@@ -1,8 +1,12 @@
-package com.prestongarno.transpiler.tests.parsing
+package com.prestongarno.ktq.compiler.tests.parsing
 
-import com.prestongarno.transpiler.QCompiler
-import com.prestongarno.transpiler.QLParser
-import com.prestongarno.transpiler.qlang.spec.*
+import com.prestongarno.ktq.compiler.QCompiler
+import com.prestongarno.ktq.compiler.QLParser
+import com.prestongarno.ktq.compiler.qlang.spec.QField
+import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
+import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
+import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
 import org.junit.Test
 import java.io.File
 import java.util.*

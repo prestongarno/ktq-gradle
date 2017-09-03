@@ -1,4 +1,4 @@
-package com.prestongarno.transpiler
+package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.InitStub
@@ -17,7 +17,7 @@ import com.squareup.kotlinpoet.*
 import java.io.File
 import kotlin.reflect.KClass
 
-class QCompiler internal constructor(val source: File, builder: QCompiler.Builder) {
+class QCompiler internal constructor(val source: File, builder: Builder) {
 
   val packageName = builder.packageName
   val outputName = builder.outputName

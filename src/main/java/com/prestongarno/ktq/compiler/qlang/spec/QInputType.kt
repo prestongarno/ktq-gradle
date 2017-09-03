@@ -1,4 +1,4 @@
-package com.prestongarno.transpiler.qlang.spec
+package com.prestongarno.ktq.compiler.qlang.spec
 
 import com.squareup.kotlinpoet.TypeSpec
 import com.prestongarno.ktq.QInput

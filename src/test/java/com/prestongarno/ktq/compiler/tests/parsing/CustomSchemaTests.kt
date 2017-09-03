@@ -1,7 +1,7 @@
-package com.prestongarno.transpiler.tests.parsing
+package com.prestongarno.ktq.compiler.tests.parsing
 
 
-import com.prestongarno.transpiler.QCompiler
+import com.prestongarno.ktq.compiler.QCompiler
 import java.io.File
 import org.junit.Test
 

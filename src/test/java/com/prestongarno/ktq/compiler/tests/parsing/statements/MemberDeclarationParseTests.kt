@@ -1,7 +1,7 @@
-package com.prestongarno.transpiler.tests.parsing.statements
+package com.prestongarno.ktq.compiler.tests.parsing.statements
 
-import com.prestongarno.transpiler.QLexer
-import com.prestongarno.transpiler.qlang.spec.*
+import com.prestongarno.ktq.compiler.QLexer
+import com.prestongarno.ktq.compiler.qlang.spec.QFieldInputArg
 import org.junit.Test
 import java.util.*
 

@@ -1,4 +1,4 @@
-package com.prestongarno.transpiler.qlang.spec
+package com.prestongarno.ktq.compiler.qlang.spec
 
 import java.util.*
 import java.util.stream.Collectors
@@ -28,7 +28,7 @@ enum class Scalar(val token: String) {
       FLOAT -> floatType
       BOOL -> boolType
       STRING -> stringType
-      Scalar.ID -> stringType
+      ID -> stringType
       UNKNOWN -> customType
     }
 

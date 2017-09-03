@@ -1,7 +1,10 @@
-package com.prestongarno.transpiler
+package com.prestongarno.ktq.compiler
 
-import com.prestongarno.transpiler.qlang.spec.*
-import com.sun.org.apache.xpath.internal.operations.Bool
+import com.prestongarno.ktq.compiler.qlang.spec.QField
+import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
+import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
+import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet

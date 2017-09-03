@@ -3,7 +3,7 @@ buildscript {
   ext.kotlin_version = '1.1.4-3'
   ext.clientId = 'ktq-gradle'
   ext.projectDescription = 'a kotlin client for graphql'
-  ext.gitBaseUrl = GIT_BASE_URL + '/ktq'
+  ext.gitBaseUrl = GIT_BASE_URL + '/ktq-gradle'
   ext.projLicenseUrl = "$gitBaseUrl/LICENSE.txt"
   ext.localStaging = "$buildDir/publish/staging/"
   ext.localBintrayStaging = "$buildDir/bintray/"
@@ -42,20 +42,29 @@ compileTestKotlin {
   }
 }
 dependencies {
-  compile "org.jetbrains.kotlin:kotlin-reflect"
-  testCompile 'junit:junit:4.12'
-  testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+  compile gradleApi()
   compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-  testCompile group: 'junit', name: 'junit', version: '4.12'
+  compile "org.jetbrains.kotlin:kotlin-reflect"
   compile 'com.squareup:kotlinpoet:0.4.0'
   compile 'com.prestongarno.ktq:ktq-client:0.1'
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+  testCompile 'junit:junit:4.12'
+  testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+}
+
+jar {
+  manifest {
+    attributes(
+      'Manifest-Version': '1.0',
+      "implementation-class": "${group}.compiler.CompilerPlugin"
+    )
+  }
 }
 
 task integrationTest(type: Test) {
   options {
-    systemProperties System.getProperties() 
     //noinspection GroovyAssignabilityCheck
-    systemProperties.put("-Dcom.prestongarno.ktq.compiler.writeTestFiles", "true")
+    systemProperties.put("-D" + group + ".compiler.writeTestFiles", "true")
   }
 }
 

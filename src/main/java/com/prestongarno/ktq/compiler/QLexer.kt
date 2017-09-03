@@ -1,4 +1,4 @@
-package com.prestongarno.transpiler
+package com.prestongarno.ktq.compiler
 
 import java.util.*
 
@@ -6,13 +6,13 @@ object QLexer {
 
   var NAME = Regex("([a-zA-Z0-9_]+)(\\((.*?)\\))?\\s*:")
   var TYPE = Regex("([a-zA-Z0-9_]+)")
-  var INPUT = Regex("$TYPE\\s*:\\s*(\\[?($TYPE!?)\\]?!?)(\\s*?=\\s*?(.*?))?")
-  var LIST = Regex("\\[$TYPE!?]")
-  var NON_NULL = Regex("\\[?$TYPE((!\\])|(\\]!)|!)")
+  var INPUT = Regex("${TYPE}\\s*:\\s*(\\[?(${TYPE}!?)\\]?!?)(\\s*?=\\s*?(.*?))?")
+  var LIST = Regex("\\[${TYPE}!?]")
+  var NON_NULL = Regex("\\[?${TYPE}((!\\])|(\\]!)|!)")
 
   /** Regex to match entire field (input) **/
   val DIRECTIVE = Regex("@([a-zA-Z0-9_]*?)\\((.*?)\\)")
-  var INPUT_FIELD = Regex("$NAME\\s*(\\[?($TYPE!?)\\]?)(?:\\s*)?($DIRECTIVE)?")
+  var INPUT_FIELD = Regex("${NAME}\\s*(\\[?(${TYPE}!?)\\]?)(?:\\s*)?(${DIRECTIVE})?")
   var PAR = Regex("\\((.*?)\\)", RegexOption.DOT_MATCHES_ALL)
   val NEWLINESPACES = Regex("[\\s\\t]*\\n[\\s\\t]*", RegexOption.MULTILINE)
   val INPUT_SPLIT = ",+".toRegex()

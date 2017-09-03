@@ -1,7 +1,19 @@
-package com.prestongarno.transpiler
+package com.prestongarno.ktq.compiler
 
-import com.prestongarno.transpiler.qlang.spec.*
-import com.prestongarno.transpiler.qlang.spec.RootType.*
+import com.prestongarno.ktq.compiler.qlang.spec.QCustomScalarType
+import com.prestongarno.ktq.compiler.qlang.spec.QDirectiveSymbol
+import com.prestongarno.ktq.compiler.qlang.spec.QEnumDef
+import com.prestongarno.ktq.compiler.qlang.spec.QField
+import com.prestongarno.ktq.compiler.qlang.spec.QFieldInputArg
+import com.prestongarno.ktq.compiler.qlang.spec.QInputType
+import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
+import com.prestongarno.ktq.compiler.qlang.spec.QSchemaType
+import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
+import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
+import com.prestongarno.ktq.compiler.qlang.spec.RootType
+import com.prestongarno.ktq.compiler.qlang.spec.RootType.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
