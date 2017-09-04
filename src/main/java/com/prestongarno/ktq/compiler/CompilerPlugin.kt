@@ -27,10 +27,6 @@ fun String.toJavaFileCompat(): String {
       }
 }
 
-fun PropertyState<File>.child(relative: String): File =
-    get()?.let { it.child(relative) }
-        ?: throw IllegalStateException("No such file to set child $relative")
-
 fun File.child(relative: String): File = File("$absolutePath/$relative")
 
 fun String.asFile(): File = File(this)

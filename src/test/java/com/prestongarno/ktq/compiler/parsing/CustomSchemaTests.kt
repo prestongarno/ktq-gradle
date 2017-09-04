@@ -19,7 +19,7 @@ class CustomSchemaTests {
     QCompiler.initialize("SampleOne")
         .packageName("com.prestongarno.ktq")
         .compile(File(file.path))
-        .writeToFile(File(TestContext.outputRoot.path + "/SampleOne.kt"))
+        .writeToFile(File(TestContext.outputRoot.path + "SampleOne.kt"))
   }
 
   @Test
