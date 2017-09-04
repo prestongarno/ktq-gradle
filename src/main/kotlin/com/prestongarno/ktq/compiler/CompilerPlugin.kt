@@ -2,17 +2,20 @@ package com.prestongarno.ktq.compiler
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.provider.PropertyState
 import java.io.File
 
 open class CompilerPlugin : Plugin<Project> {
 
   override fun apply(project: Project?) {
     QContext.project = project!!
-    project.extensions?.create("ktq", QCompilerConfig::class.java, project)!!
-    project.tasks.create("ktqCompile", QCompilationRunner::class.java)
+    project.extensions?.create("ktq", QCompilerConfig::class.java, project)
+    val runner = project.tasks.create("compileGraphql", QCompilationRunner::class.java)
+    //project.tasks.create("assembleGraphql", JarBuilder::class.java)
+    project.tasks.filter { it.group?.contains("org.jetbrains") == true }
+        .forEach { it.dependsOn.add(runner) }
   }
 }
+
 
 fun String.toJavaFileCompat(): String {
   return replace("[^a-z|A-Z|0-9]*".toRegex(), "")
@@ -30,3 +33,5 @@ fun String.toJavaFileCompat(): String {
 fun File.child(relative: String): File = File("$absolutePath/$relative")
 
 fun String.asFile(): File = File(this)
+
+fun String.containsAny(match: List<String>): Boolean = match.find { contains(it) } != null

@@ -1,14 +1,11 @@
 package com.prestongarno.ktq.compiler.parsing
 
 
-import com.prestongarno.ktq.compiler.QContext
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.TestContext
 import com.prestongarno.ktq.compiler.child
-import org.junit.Before
 import java.io.File
 import org.junit.Test
-import java.net.URI
 
 class CustomSchemaTests {
 
@@ -19,7 +16,7 @@ class CustomSchemaTests {
     QCompiler.initialize("SampleOne")
         .packageName("com.prestongarno.ktq")
         .compile(File(file.path))
-        .writeToFile(File(TestContext.outputRoot.path + "SampleOne.kt"))
+        .writeToFile(TestContext.outputRoot.absolutePath)
   }
 
   @Test
@@ -30,7 +27,7 @@ class CustomSchemaTests {
         .packageName("com.prestongarno.ktq.yelp")
         .compile(File(file.path))
         .result {}
-        .writeToFile(File(outputRoot).child("YelpGraphql.kt"))
+        .writeToFile(TestContext.outputRoot.absolutePath)
   }
 }
 
