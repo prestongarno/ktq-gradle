@@ -1,7 +1,9 @@
-package com.prestongarno.ktq.compiler.tests.parsing
+package com.prestongarno.ktq.compiler.parsing
 
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.QLParser
+import com.prestongarno.ktq.compiler.TestContext
+import com.prestongarno.ktq.compiler.child
 import com.prestongarno.ktq.compiler.qlang.spec.QField
 import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
@@ -14,17 +16,21 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GithubApiTest {
+
   @Test
   fun schemaTest() {
     val file = this::class.java.classLoader.getResource("graphql.schema.graphqls")
 
-    QCompiler.initialize("GitHubGraphql")
+    QCompiler.initialize()
         .packageName("com.prestongarno.ktq.github")
         .compile(File(file.toURI())) { content ->
-          content.unions.forEach { union -> union.possibleTypes.forEach { t -> assert(t !is QUnknownType) } }
-          content.ifaces.forEach { iface -> iface.fields.forEach { field -> assert(field.type !is QUnknownType) } }
+          content.unions.forEach { union ->
+            union.possibleTypes.forEach { t -> assert(t !is QUnknownType) } }
+          content.ifaces.forEach { iface ->
+            iface.fields.forEach { field -> assert(field.type !is QUnknownType) } }
           content.types.forEach { type ->
-            type.interfaces.forEach { iface -> assert(!(iface is QUnknownInterface)) }
+            type.interfaces.forEach { iface ->
+              assert(iface !is QUnknownInterface) }
           }
 
           content.stateful.forEach { f ->
@@ -46,7 +52,8 @@ class GithubApiTest {
                   is QInterfaceDef -> require(field.abstract)
                 }
               }
-        }.result{}.writeToFile("/Users/admin/IdeaProjects/ktq/runtime/src/test/java/")
+        }.result {}
+        .writeToFile(File(TestContext.outputRoot).child("GithubSchema.kt"))
   }
 
   @Test

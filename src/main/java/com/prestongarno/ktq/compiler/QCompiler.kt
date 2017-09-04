@@ -46,16 +46,18 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
   }
 
   fun result(consumer: (String) -> Unit) = apply {
+    if (rawResult.isNotEmpty()) {
+      consumer(rawResult)
+      return this
+    }
+
     val ktBuilder = KotlinFile.builder(packageName, outputName)
     getResolvedImports().mapNotNull {
       it.simpleName
-    }.let {
-      ktBuilder.addStaticImport("com.prestongarno.ktq", *it.toTypedArray()) }
+    }.let { ktBuilder.addStaticImport("com.prestongarno.ktq", *it.toTypedArray()) }
     getSchemaTypeHelpers().mapNotNull {
       it.simpleName
-    }.let {
-      ktBuilder.addStaticImport(com.prestongarno.ktq.QSchemaType::class, *it.toTypedArray())
-    }
+    }.let { ktBuilder.addStaticImport(com.prestongarno.ktq.QSchemaType::class, *it.toTypedArray()) }
     compilation?.getAllTypes()?.forEach {
       ktBuilder.addType(it)
     }
@@ -79,15 +81,20 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
   }
 
   fun writeToFile(destination: String) = apply {
-    val shouldWrite = System.getProperty("-Dcom.prestongarno.ktq.compiler.writeTestFiles") ?: "false"
-    if (shouldWrite == "true" && destination.trim().isNotEmpty())
-      File("$destination/${packageName.replace(".", "/")}/$outputName.kt").printWriter().use { out ->
-        out.write(rawResult)
-      }
+    if (!QContext.isDryRun && destination.trim().isNotEmpty()) {
+      writeToFile(File("$destination/$outputName.kt"))
+    }
+  }
+
+  fun writeToFile(destination: File) = apply {
+    destination.parent.asFile().mkdirs()
+    destination.printWriter()
+        .use { out -> out.write(rawResult) }
   }
 
   fun compile(): QCompilationUnit {
     this.compilation = Attr.attributeCompilationUnit(QLParser().parse(this.source))
+    result{}
     return compilation!!
   }
 }
