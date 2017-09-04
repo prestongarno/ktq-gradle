@@ -1,14 +1,11 @@
 package com.prestongarno.ktq.compiler.parsing
 
 
-import com.prestongarno.ktq.compiler.QContext
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.TestContext
 import com.prestongarno.ktq.compiler.child
-import org.junit.Before
 import java.io.File
 import org.junit.Test
-import java.net.URI
 
 class CustomSchemaTests {
 

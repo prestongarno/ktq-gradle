@@ -14,8 +14,6 @@ plugins {
   id 'idea'
 }
 
-clean { doFirst { delete "src/test/resources/MockProjects"} }
-
 version = 0.1
 group = 'com.prestongarno.ktq'
 
@@ -31,37 +29,31 @@ dependencies {
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile 'junit:junit:4.12'
   testCompile "org.jetbrains.kotlin:kotlin-test"
-  testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin"
 }
 
 jar {
   manifest {
-    attributes(
-            'Manifest-Version': '1.0',
+    attributes('Manifest-Version': '1.0',
             "implementation-class": "${rootProject.group}.compiler.CompilerPlugin"
     )
   }
 }
 
 test {
-  //noinspection GroovyAssignabilityCheck
-  systemProperties.put('-Dcom.prestongarno.ktq.compiler.testOutput', "src/test/resources/MockProjects")
-  //noinspection GroovyAssignabilityCheck
-  systemProperties.put('-Dcom.prestongarno.ktq.compiler.writeFiles', "false")
-
+  systemProperties 'com.prestongarno.ktq.compiler.testOutput': 'testOutput'
 }
 
 task integrationTest(type: Test) {
   options {
-    //noinspection GroovyAssignabilityCheck
-    systemProperties.put('-Dcom.prestongarno.ktq.compiler.testOutput', "MockProjects")
+    systemProperties 'com.prestongarno.ktq.compiler.testOutput': 'testOutput'
+    systemProperties 'com.prestongarno.ktq.compiler.writeFiles': 'true'
   }
 }
 
 sourceSets {
   main {
     java {
-      srcDirs = ['src/main/java']
+      srcDirs = ['src/main/kotlin']
     }
     resources {
       srcDirs = ['src/main/resources']
@@ -69,7 +61,7 @@ sourceSets {
   }
   test {
     java {
-      srcDirs = ['src/test/java']
+      srcDirs = ['src/test/kotlin']
     }
     resources {
       srcDirs = ['src/test/resources']

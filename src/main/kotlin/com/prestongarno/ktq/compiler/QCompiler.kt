@@ -15,9 +15,12 @@ import com.prestongarno.ktq.TypeArgBuilder
 import com.prestongarno.ktq.TypeListArgBuilder
 import com.squareup.kotlinpoet.*
 import java.io.File
+import java.util.logging.Logger
 import kotlin.reflect.KClass
 
 class QCompiler internal constructor(val source: File, builder: Builder) {
+
+  val log by QContext.logger<QCompiler>()
 
   val packageName = builder.packageName
   val outputName = builder.outputName
@@ -81,20 +84,22 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
   }
 
   fun writeToFile(destination: String) = apply {
+    log.info("Writing file $destination")
     if (!QContext.isDryRun && destination.trim().isNotEmpty()) {
       writeToFile(File("$destination/$outputName.kt"))
     }
   }
 
   fun writeToFile(destination: File) = apply {
-    destination.parent.asFile().mkdirs()
+    log.info("Writing file $destination")
+    destination.parent.asFile().let { if(!it.exists()) it.mkdirs() }
     destination.printWriter()
         .use { out -> out.write(rawResult) }
   }
 
   fun compile(): QCompilationUnit {
     this.compilation = Attr.attributeCompilationUnit(QLParser().parse(this.source))
-    result{}
+    result{ log.info(it) }
     return compilation!!
   }
 }

@@ -1,62 +1,59 @@
 package com.prestongarno.ktq.compiler
 
 import org.gradle.api.Project
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
 import java.io.File
 
 interface QConfig {
-  val schema: File
-  val targetDir: File
+  @get:Input val schema: File
+  @get:OutputDirectory val targetDir: File
   val packageName: String
   val kotlinName: String
 }
 
-open class QCompilerConfig(project: Project) {
-
+open class QCompilerConfig(val project: Project) {
   val schemaProp = project.property(File::class.java)
-
   val targetDirProp = project.property(File::class.java)
-
   var packageNameProp = project.property(String::class.java)
-
   var kotlinNameProp = project.property(String::class.java)
-
 }
 
 class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
-
+  val log by QContext.logger<ConfigAdapter>()
   override val schema: File by lazy {
     val prop = configuration.schemaProp
-    if (configuration.schemaProp.isPresent
+    (if (configuration.schemaProp.isPresent
         && prop.get().exists()
         && prop.get().isFile
         && prop.get().canRead()) prop.get()
-    else File.createTempFile("null", "null").apply { setReadable(false) }
+    else File.createTempFile("null", "null").apply { setReadable(false) })
+        .also { log.info("Schema file for config at: $it") }
   }
-
   override val targetDir: File by lazy {
     val prop = configuration.targetDirProp
-    if (prop.isPresent
+    (if (prop.isPresent
         && prop.get().exists()
         && prop.get().isDirectory
         && prop.get().canExecute()) prop.get()
     else
-      File("${QContext.project.buildDir.absolutePath}/generated/ktq/")
+      File("${QContext.project.buildDir.absolutePath}/generated/ktq/"))
+        .also { log.info("Target directory for schema at: $it") }
   }
-
   override val packageName: String by lazy {
     val value = configuration.packageNameProp
-    if (value.isPresent && value.get().isNotEmpty())
+    (if (value.isPresent && value.get().isNotEmpty())
       value.get()
     else
-      "com.prestongarno.ktq.schema"
+      "com.prestongarno.ktq.schema")
+        .also { log.info("Package name for schema: $it") }
   }
-
   override val kotlinName: String by lazy {
     val value = configuration.kotlinNameProp
-    if (value.isPresent && value.get().isNotEmpty())
+    (if (value.isPresent && value.get().isNotEmpty())
       value.get()
     else configuration.schemaProp.get().nameWithoutExtension
-        .toJavaFileCompat()
+        .toJavaFileCompat())
+        .also { log.info("Kotlin file name = '$it'")}
   }
-
 }
