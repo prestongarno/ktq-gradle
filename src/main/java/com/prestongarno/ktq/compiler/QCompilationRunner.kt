@@ -7,7 +7,6 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext
 
   @TaskAction
   fun ktqCompile() {
-
     if (schema.canRead()) {
       project.logger
           .info("generating graphql schema for target: $schema")
