@@ -29,15 +29,21 @@ dependencies {
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile 'junit:junit:4.12'
   testCompile "org.jetbrains.kotlin:kotlin-test"
+  testCompile "org.jetbrains.kotlin:kotlin-gradle-plugin"
 }
 
 jar {
   manifest {
     attributes(
             'Manifest-Version': '1.0',
-            "implementation-class": "${group}.compiler.CompilerPlugin"
+            "implementation-class": "${rootProject.group}.compiler.CompilerPlugin"
     )
   }
+}
+
+test {
+  systemProperty "-D${rootProject.group}.compiler.GradleTests",
+          (sourceSets.test.resources.asPath + "MockProjects").toString()
 }
 
 task integrationTest(type: Test) {
@@ -63,5 +69,11 @@ sourceSets {
     resources {
       srcDirs = ['src/test/res']
     }
+  }
+}
+idea {
+  module {
+    downloadJavadoc = true
+    //downloadSources = true
   }
 }

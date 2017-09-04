@@ -1,0 +1,6 @@
+type GradleDependency {
+  name: String
+  version: Int
+  repository: String
+  dependencies: [GradleDependency]
+}

@@ -1,4 +1,4 @@
-package com.prestongarno.ktq.compiler.tests.parsing.statements
+package com.prestongarno.ktq.compiler.parsing
 
 import com.prestongarno.ktq.compiler.QLexer
 import com.prestongarno.ktq.compiler.qlang.spec.QFieldInputArg

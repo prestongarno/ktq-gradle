@@ -1,18 +1,32 @@
-package com.prestongarno.ktq.compiler.tests.parsing
+package com.prestongarno.ktq.compiler.parsing
 
 
 import com.prestongarno.ktq.compiler.QCompiler
+import com.prestongarno.ktq.compiler.child
+import org.junit.Before
 import java.io.File
 import org.junit.Test
+import java.net.URI
 
 class CustomSchemaTests {
+
+  lateinit var mockDir: URI
+
+  @Before
+  fun setUp() {
+    mockDir = this::class.java
+        .classLoader
+        .getResource(System.getProperty("-D" + this::class.java.`package`.name))
+        .toURI() ?: throw IllegalStateException("Mock project directory not set!")
+  }
+
   @Test
   fun testConflictingOverridesPass() {
     val file = this::class.java.classLoader.getResource("sample.schema.graphqls")
     QCompiler.initialize("SampleOne")
         .packageName("com.prestongarno.ktq")
         .compile(File(file.path))
-        .writeToFile("/Users/admin/IdeaProjects/ktq/runtime/src/test/java/")
+        .writeToFile(File(mockDir).child("SampleOne"))
   }
 
   @Test
@@ -22,7 +36,7 @@ class CustomSchemaTests {
         .packageName("com.prestongarno.ktq.yelp")
         .compile(File(file.path))
         .result {}
-        .writeToFile("/Users/admin/IdeaProjects/ktq/runtime/src/test/java/")
+        .writeToFile(File(mockDir).child("YelpGraphql"))
   }
 }
 

@@ -50,7 +50,8 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
     getResolvedImports().mapNotNull {
       it.simpleName
     }.let {
-      ktBuilder.addStaticImport("com.prestongarno.ktq", *it.toTypedArray()) }
+      ktBuilder.addStaticImport("com.prestongarno.ktq", *it.toTypedArray())
+    }
     getSchemaTypeHelpers().mapNotNull {
       it.simpleName
     }.let {
@@ -80,10 +81,16 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
 
   fun writeToFile(destination: String) = apply {
     val shouldWrite = System.getProperty("-Dcom.prestongarno.ktq.compiler.writeTestFiles") ?: "false"
-    if (shouldWrite == "true" && destination.trim().isNotEmpty())
-      File("$destination/${packageName.replace(".", "/")}/$outputName.kt").printWriter().use { out ->
-        out.write(rawResult)
-      }
+    if (shouldWrite == "true" && destination.trim().isNotEmpty()) {
+      val file = File("$destination/${packageName.replace(".", "/")}/$outputName.kt")
+      file.mkdirs()
+      file.printWriter().use { it.write(rawResult) }
+    }
+  }
+
+  fun writeToFile(destination: File) = apply {
+    destination.mkdirs()
+    destination.printWriter().use { out -> out.write(rawResult) }
   }
 
   fun compile(): QCompilationUnit {
