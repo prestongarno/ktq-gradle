@@ -20,7 +20,8 @@ open class QCompilerConfig(val project: Project) {
 }
 
 class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
-  val log by QContext.logger<ConfigAdapter>()
+  val log by lazy { configuration.project.logger }
+
   override val schema: File by lazy {
     val prop = configuration.schemaProp
     (if (configuration.schemaProp.isPresent

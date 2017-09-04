@@ -2,11 +2,7 @@ package com.prestongarno.ktq.compiler
 
 import org.apache.log4j.Logger
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.ArtifactRepositoryContainer
-import org.gradle.api.artifacts.repositories.ArtifactRepository
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.internal.logging.services.DefaultLoggingManager
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
 import java.io.File
