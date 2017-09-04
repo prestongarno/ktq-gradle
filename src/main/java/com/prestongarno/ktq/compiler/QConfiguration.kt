@@ -40,7 +40,7 @@ class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
         && prop.get().isDirectory
         && prop.get().canExecute()) prop.get()
     else
-      File("${Context.project.buildDir.absolutePath}/generated/ktq/")
+      File("${QContext.project.buildDir.absolutePath}/generated/ktq/")
   }
 
   override val packageName: String by lazy {

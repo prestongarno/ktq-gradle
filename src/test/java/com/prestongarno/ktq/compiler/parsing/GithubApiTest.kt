@@ -2,31 +2,20 @@ package com.prestongarno.ktq.compiler.parsing
 
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.QLParser
+import com.prestongarno.ktq.compiler.TestContext
 import com.prestongarno.ktq.compiler.child
 import com.prestongarno.ktq.compiler.qlang.spec.QField
 import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
-import org.junit.Before
 import org.junit.Test
 import java.io.File
-import java.net.URI
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class GithubApiTest {
-
-  lateinit var mockDir: URI
-
-  @Before
-  fun setUp() {
-    mockDir = this::class.java
-        .classLoader
-        .getResource(System.getProperty("-D" + this::class.java.`package`.name))
-        .toURI() ?: throw IllegalStateException("Mock project directory not set!")
-  }
 
   @Test
   fun schemaTest() {
@@ -64,7 +53,7 @@ class GithubApiTest {
                 }
               }
         }.result {}
-        .writeToFile(File(mockDir).child("GithubSchema"))
+        .writeToFile(File(TestContext.outputRoot).child("GithubSchema.kt"))
   }
 
   @Test

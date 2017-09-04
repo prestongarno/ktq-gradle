@@ -3,7 +3,7 @@ package com.prestongarno.ktq.compiler
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(Context.configuration) {
+open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext.configuration) {
 
   @TaskAction
   fun ktqCompile() {
@@ -13,7 +13,7 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(Context.
           .info("generating graphql schema for target: $schema")
       QCompiler.initialize()
           .packageName(packageName)
-          .compile(schema) //{ println(it.getAllTypes().joinToString(separator = "\n" + "=".repeat(20), prefix = "=".repeat(40) + "\n\n")) }
+          .compile(schema)
           .writeToFile(targetDir.child(kotlinName).absolutePath)
     } else {
       project.logger

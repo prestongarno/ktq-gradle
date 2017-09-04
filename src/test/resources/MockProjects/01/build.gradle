@@ -1,0 +1,6 @@
+buildscript {
+}
+
+repositories {
+  flatdir { dirs './' }
+}
