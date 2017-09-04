@@ -5,6 +5,6 @@ import java.net.URI
 
 object TestContext {
   private val outputJvmArg = System.getProperty("com.prestongarno.ktq.compiler.testOutput")
-  val outputRoot: URI = File(outputJvmArg).toURI()
+  val outputRoot: File = File(outputJvmArg)
 }
 

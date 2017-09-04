@@ -40,12 +40,14 @@ jar {
 }
 
 test {
-  systemProperties 'com.prestongarno.ktq.compiler.testOutput': 'testOutput'
+  systemProperties 'com.prestongarno.ktq.compiler.testOutput':
+          "$rootDir.path/testOutput"
 }
 
 task integrationTest(type: Test) {
   options {
-    systemProperties 'com.prestongarno.ktq.compiler.testOutput': 'testOutput'
+    systemProperties 'com.prestongarno.ktq.compiler.testOutput':
+            "$rootDir.path/testOutput"
     systemProperties 'com.prestongarno.ktq.compiler.writeFiles': 'true'
   }
 }

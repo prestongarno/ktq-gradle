@@ -53,7 +53,7 @@ class GithubApiTest {
                 }
               }
         }.result {}
-        .writeToFile(File(TestContext.outputRoot).child("GithubSchema.kt"))
+        .writeToFile(TestContext.outputRoot.child("GithubSchema.kt"))
   }
 
   @Test

@@ -28,7 +28,7 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext
   }
 }
 
-open class JarBuilder : Jar(), QConfig by ConfigAdapter(QContext.configuration) {
+/*open class JarBuilder : Jar(), QConfig by ConfigAdapter(QContext.configuration) {
   val customDest: File by lazy { targetDir.child("/artifacts") }
 
   @TaskAction
@@ -50,4 +50,4 @@ open class JarBuilder : Jar(), QConfig by ConfigAdapter(QContext.configuration) 
       customDest
     else checkIfSpecified
   }
-}
+}*/

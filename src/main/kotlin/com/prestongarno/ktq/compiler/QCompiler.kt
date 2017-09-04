@@ -15,13 +15,9 @@ import com.prestongarno.ktq.TypeArgBuilder
 import com.prestongarno.ktq.TypeListArgBuilder
 import com.squareup.kotlinpoet.*
 import java.io.File
-import java.util.logging.Logger
 import kotlin.reflect.KClass
 
 class QCompiler internal constructor(val source: File, builder: Builder) {
-
-  val log by QContext.logger<QCompiler>()
-
   val packageName = builder.packageName
   val outputName = builder.outputName
   var compilation: QCompilationUnit? = null
@@ -37,9 +33,7 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
 
   class Builder internal constructor(internal var outputName: String) {
     internal var packageName: String = "com.prestongarno.ktq"
-
     fun packageName(name: String) = apply { this.packageName = name }
-
     fun compile(file: File, result: (QCompilationUnit) -> Unit = {}): QCompiler {
       val qCompiler = QCompiler(file, this)
       qCompiler.compile()
@@ -53,7 +47,6 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
       consumer(rawResult)
       return this
     }
-
     val ktBuilder = KotlinFile.builder(packageName, outputName)
     getResolvedImports().mapNotNull {
       it.simpleName
@@ -64,11 +57,9 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
     compilation?.getAllTypes()?.forEach {
       ktBuilder.addType(it)
     }
-
     val suppressedWarnings = listOf(
         "@file:Suppress(\"unused\")"
     )
-
     val rawFile = ktBuilder.build().toString()
     val result = suppressedWarnings.joinToString("\n") +
         "\n\n" +
@@ -84,22 +75,22 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
   }
 
   fun writeToFile(destination: String) = apply {
-    log.info("Writing file $destination")
+    println("Writing file $destination")
     if (!QContext.isDryRun && destination.trim().isNotEmpty()) {
-      writeToFile(File("$destination/$outputName.kt"))
+      writeToFile(File("$destination/$outputName"))
     }
   }
 
   fun writeToFile(destination: File) = apply {
-    log.info("Writing file $destination")
-    destination.parent.asFile().let { if(!it.exists()) it.mkdirs() }
+    println("Writing file $destination")
+    destination.parent.asFile().let { if (!it.exists()) it.mkdirs() }
     destination.printWriter()
         .use { out -> out.write(rawResult) }
   }
 
   fun compile(): QCompilationUnit {
     this.compilation = Attr.attributeCompilationUnit(QLParser().parse(this.source))
-    result{ log.info(it) }
+    result {}
     return compilation!!
   }
 }

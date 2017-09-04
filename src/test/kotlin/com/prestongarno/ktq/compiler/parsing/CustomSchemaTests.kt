@@ -16,7 +16,7 @@ class CustomSchemaTests {
     QCompiler.initialize("SampleOne")
         .packageName("com.prestongarno.ktq")
         .compile(File(file.path))
-        .writeToFile(File(TestContext.outputRoot.path + "SampleOne.kt"))
+        .writeToFile(TestContext.outputRoot.absolutePath)
   }
 
   @Test
@@ -27,7 +27,7 @@ class CustomSchemaTests {
         .packageName("com.prestongarno.ktq.yelp")
         .compile(File(file.path))
         .result {}
-        .writeToFile(File(outputRoot).child("YelpGraphql.kt"))
+        .writeToFile(TestContext.outputRoot.absolutePath)
   }
 }
 
