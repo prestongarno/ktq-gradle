@@ -16,19 +16,24 @@ interface QConfig {
  * Extension which is added by plugin to capture input
  */
 open class QCompilerConfig(project: Project) {
-  val schemaProp = project.property(File::class.java)
-  val targetDirProp = project.property(File::class.java)
+  /** Actually, I don't even know why these are a thing on second thought
+   */
+  var schemaProp = project.property(File::class.java)
+  var targetDirProp = project.property(File::class.java)
   var packageNameProp = project.property(String::class.java)
   var kotlinNameProp = project.property(String::class.java)
+
+  fun schema(value: String) = schemaProp.set(value.asFile())
+  fun targetDir(value: String) = targetDirProp.set(value.asFile())
+  fun packageName(value: String) = packageNameProp.set(value)
+  fun kotlinName(value: String) = kotlinNameProp.set(value)
 }
 
 /**
  * Adapter which sets default values if they aren't specified
  */
 class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
-
   private val configuration by configLoader
-
   override val schema: File by lazy {
     val prop = configuration.schemaProp
     (if (configuration.schemaProp.isPresent

@@ -14,9 +14,11 @@ import java.io.File
 open class QCompilationRunner : DefaultTask(),
     QConfig by ConfigAdapter(lazy { QContext.configuration }) {
 
+  override fun getDescription(): String = "convert graphql schema to kotlin"
+
   val output by lazy { targetDir.child(kotlinName) }
-  @TaskAction
-  fun ktqCompile() {
+
+  @TaskAction fun ktqCompile() {
     if (schema.canRead()
         && schema.absolutePath.startsWith(project.rootDir.absolutePath)) {
       project.logger.info("generating graphql schema for target: $schema")
