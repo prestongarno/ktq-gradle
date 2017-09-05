@@ -1,5 +1,5 @@
 # ktq-gradle
-gradle plugin to generate Kotlin types for the [ktq graphql client](https://github.com/prestongarno/ktq)
+Generates Kotlin types for the [ktq graphql client](https://github.com/prestongarno/ktq)
 
 ## How to use
 
