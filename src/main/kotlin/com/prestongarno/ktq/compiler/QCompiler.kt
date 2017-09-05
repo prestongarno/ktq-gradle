@@ -75,14 +75,17 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
   }
 
   fun writeToFile(destination: String) = apply {
-    println("Writing file $destination")
+    val outResolved =
+        if (outputName.endsWith(".kt"))
+          outputName
+        else outputName + ".kt"
+
     if (!QContext.isDryRun && destination.trim().isNotEmpty()) {
-      writeToFile(File("$destination/$outputName"))
+      writeToFile(File("$destination/$outResolved"))
     }
   }
 
   fun writeToFile(destination: File) = apply {
-    println("Writing file $destination")
     destination.parent.asFile().let { if (!it.exists()) it.mkdirs() }
     destination.printWriter()
         .use { out -> out.write(rawResult) }

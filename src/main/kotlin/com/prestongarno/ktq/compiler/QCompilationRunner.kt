@@ -21,8 +21,7 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext
       this.didWork = true
       this.didWork
     } else {
-      project.logger
-          .info("no graphql schema specified, skipping")
+      project.logger.info("no graphql schema specified, skipping")
       false
     }
   }
@@ -33,7 +32,6 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext
 
   @TaskAction
   fun exe() {
-    println("Executing for target: '$destinationDir'")
     this.from(this.targetDir)
         .into(destinationDir)
         .actions.forEach { it.execute(this) }
@@ -45,7 +43,6 @@ open class QCompilationRunner : DefaultTask(), QConfig by ConfigAdapter(QContext
 
   override fun getDestinationDir(): File {
     val checkIfSpecified = super.getDestinationDir() ?: customDest
-    println(checkIfSpecified)
     return if (checkIfSpecified == project.findProperty("distsDir"))
       customDest
     else checkIfSpecified

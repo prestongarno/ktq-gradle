@@ -6,6 +6,14 @@ buildscript {
   ext.projLicenseUrl = "$gitBaseUrl/LICENSE.txt"
   ext.localStaging = "$buildDir/staging/"
   ext.localBintrayStaging = "$buildDir/bintray/"
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
+  }
 }
 
 plugins {
@@ -19,13 +27,14 @@ group = 'com.prestongarno.ktq'
 
 
 repositories {
-  mavenCentral()
+  jcenter()
 }
 dependencies {
   compile gradleApi()
   compile "org.jetbrains.kotlin:kotlin-reflect"
   compile 'com.squareup:kotlinpoet:0.4.0'
   compile 'com.prestongarno.ktq:ktq-client:0.1'
+  testCompile gradleTestKit()
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile 'junit:junit:4.12'
   testCompile "org.jetbrains.kotlin:kotlin-test"
@@ -39,15 +48,8 @@ jar {
   }
 }
 
-test {
-  systemProperties 'com.prestongarno.ktq.compiler.testOutput':
-          "$rootDir.path/testOutput"
-}
-
 task integrationTest(type: Test) {
   options {
-    systemProperties 'com.prestongarno.ktq.compiler.testOutput':
-            "$rootDir.path/testOutput"
     systemProperties 'com.prestongarno.ktq.compiler.writeFiles': 'true'
   }
 }
