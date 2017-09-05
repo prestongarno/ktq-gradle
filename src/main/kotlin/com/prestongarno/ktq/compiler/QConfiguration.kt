@@ -28,7 +28,6 @@ class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
         && prop.get().isFile
         && prop.get().canRead()) prop.get()
     else File.createTempFile("null", "null").apply { setReadable(false) })
-        .also { println("Schema file for config at: $it") }
   }
   override val targetDir: File by lazy {
     val prop = configuration.targetDirProp
@@ -38,7 +37,6 @@ class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
         && prop.get().canExecute()) prop.get()
     else
       File("${QContext.project.buildDir.absolutePath}/generated/ktq/"))
-        .also { println("Target directory for schema at: $it") }
   }
   override val packageName: String by lazy {
     val value = configuration.packageNameProp
@@ -46,7 +44,6 @@ class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
       value.get()
     else
       "com.prestongarno.ktq.schema")
-        .also { println("Package name for schema: $it") }
   }
   override val kotlinName: String by lazy {
     val value = configuration.kotlinNameProp
@@ -54,6 +51,5 @@ class ConfigAdapter(private val configuration: QCompilerConfig) : QConfig {
       value.get()
     else configuration.schemaProp.get().nameWithoutExtension
         .toJavaFileCompat())
-        .also { println("Kotlin file name = '$it'")}
   }
 }

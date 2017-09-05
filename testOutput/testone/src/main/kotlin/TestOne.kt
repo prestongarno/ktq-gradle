@@ -1,4 +1,0 @@
-
-type foo {
-  mint: Int
-}
