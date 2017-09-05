@@ -26,7 +26,7 @@ The list below shows all possible options which you can specify in the `ktq` con
 
 <dl>
   <dt>schema</dt>
-  <dd>Insert the relative or fully qualified path to your GraphQl schema. Defaults to `"$buildDir/generated/ktq/"`</dd>
+  <dd>Insert the relative or fully qualified path to your GraphQl schema. Defaults to '$buildDir/generated/ktq/'</dd>
 
   <dt>targetDir</dt>
   <dd>The location for the generated source files. <b>NOTE:</b> <i>The plugin does not support JVM/JS compiling, configuring as dependencies, or adding generated source to to your project classpath!</i> See this <a href="https://stackoverflow.com/questions/20700053/how-to-add-local-jar-file-dependency-to-build-gradle-file">StackOverflow answer</a> for an easy solution</dd>
