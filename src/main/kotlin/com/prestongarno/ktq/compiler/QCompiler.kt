@@ -80,13 +80,13 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
           outputName
         else outputName + ".kt"
 
-    if (!QContext.isDryRun && destination.trim().isNotEmpty()) {
       writeToFile(File("$destination/$outResolved"))
-    }
   }
 
   fun writeToFile(destination: File) = apply {
-    destination.parent.asFile().let { if (!it.exists()) it.mkdirs() }
+    destination.parent.asFile().let {
+      if (!it.exists()) it.mkdirs() }
+
     destination.printWriter()
         .use { out -> out.write(rawResult) }
   }
