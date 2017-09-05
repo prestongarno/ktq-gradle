@@ -55,9 +55,8 @@ class QCompilationUnit(val types: List<QTypeDef>,
 
   private val conflictOverrides = mutableMapOf<QField, Pair<QTypeDef, List<QInterfaceDef>>>()
 
-  fun addConflicts(conflicts: List<Pair<QField, Pair<QTypeDef, List<QInterfaceDef>>>>) {
-    conflictOverrides.putAll(conflicts)
-  }
+  fun addConflict(conflict: Pair<QField, Pair<QTypeDef, List<QInterfaceDef>>>) =
+      conflictOverrides.put(conflict.first, conflict.second)
 
   val stateful: List<QStatefulType> by lazy {
     LinkedList<QStatefulType>()

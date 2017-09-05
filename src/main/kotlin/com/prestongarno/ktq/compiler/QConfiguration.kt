@@ -18,10 +18,10 @@ interface QConfig {
 open class QCompilerConfig(project: Project) {
   /** Actually, I don't even know why these are a thing on second thought
    */
-  internal var schemaProp = project.property(File::class.java)
-  internal var targetDirProp = project.property(File::class.java)
-  internal var packageNameProp = project.property(String::class.java)
-  internal var kotlinNameProp = project.property(String::class.java)
+  var schemaProp = project.property(File::class.java)
+  var targetDirProp = project.property(File::class.java)
+  var packageNameProp = project.property(String::class.java)
+  var kotlinNameProp = project.property(String::class.java)
 
   fun schema(value: String) = schemaProp.set(value.asFile())
   fun targetDir(value: String) = targetDirProp.set(value.asFile())

@@ -11,7 +11,6 @@ import kotlin.collections.HashSet
 import kotlin.streams.toList
 
 object Attr {
-
   fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
     verifyTypesToInterfaces(comp.types, comp.ifaces)
     attrUnionTypes(comp.unions, comp)
@@ -34,12 +33,12 @@ object Attr {
 
       t.interfaces.map { iface ->
         val attrIf = globalIface[iface.name] ?: throw IllegalArgumentException("No interface definition " +
-            "'${iface.name}' found (declared on type ${t.name})")
+                                                                                   "'${iface.name}' found (declared on type ${t.name})")
         attrInterfaces.add(0, attrIf)
         attrIf.fields.forEach { field ->
           fields[field.name]?.inheritedFrom?.add(attrIf) ?:
               throw IllegalArgumentException("Type '${t.name}' implements ${attrIf.name} " +
-                  "but does not contain a field named '${field.name}' in its declaration")
+                                                 "but does not contain a field named '${field.name}' in its declaration")
         }
         attrIf
       }.also { t.interfaces = attrInterfaces }
@@ -69,18 +68,16 @@ object Attr {
       }.filter { it.isPresent }
     }.flatMap { it.stream() }
         .map { it.get() }
-        .toList()
-        .also { comp.addConflicts(it) }
-        .parallelStream()
         .forEach { conflict ->
+          comp.addConflict(conflict)
           types.filter { it is QTypeDef && (it.interfaces.containsAny(conflict.second.second)) && it.fieldMap[conflict.first.name] != null }
               .forEach { it.fieldMap[conflict.first.name]!!.flag(QField.BuilderStatus.TOP_LEVEL) }
         }
     return comp
   }
 
-  fun List<QInterfaceDef>.containsAny(of: List<QInterfaceDef>) : Boolean {
-    of.forEach { if(this.contains(it)) return true }
+  fun List<QInterfaceDef>.containsAny(of: List<QInterfaceDef>): Boolean {
+    of.forEach { if (this.contains(it)) return true }
     return false
   }
 
@@ -89,7 +86,6 @@ object Attr {
     if (type !is QTypeDef)
       return Optional.empty()
     type.interfaces.map { iface ->
-
       iface.fields.filter {
         it.name == fieldOnType.name
       }.map {
@@ -103,7 +99,6 @@ object Attr {
         }
 
         return Optional.of(Pair(fieldOnType, Pair(type, dup.map { (first) -> first })))
-
       }
     }
     return Optional.empty()

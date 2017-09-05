@@ -9,9 +9,7 @@ open class CompilerPlugin : Plugin<Project> {
   override fun apply(project: Project?) {
     QContext.project = project!!
     project.extensions?.create("ktq", QCompilerConfig::class.java, project)
-    val runner = project.tasks.create("compileGraphql", QCompilationRunner::class.java)
-    project.tasks.filter { it.group?.contains("org.jetbrains") == true }
-        .forEach { it.dependsOn.add(runner) }
+    project.tasks.create("compileGraphql", QCompilationRunner::class.java)
   }
 }
 
