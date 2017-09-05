@@ -16,18 +16,17 @@ open class QCompilationRunner : DefaultTask(),
 
   val output by lazy { targetDir.child(kotlinName) }
   @TaskAction
-  fun ktqCompile(): Boolean {
-    return if (schema.canRead()) {
+  fun ktqCompile() {
+    if (schema.canRead()
+        && schema.absolutePath.startsWith(project.rootDir.absolutePath)) {
       project.logger.info("generating graphql schema for target: $schema")
       QCompiler.initialize()
           .packageName(packageName)
           .compile(schema)
           .writeToFile(output.absolutePath)
       this.didWork = true
-      this.didWork
     } else {
       project.logger.info("no graphql schema specified, skipping")
-      false
     }
   }
 }
