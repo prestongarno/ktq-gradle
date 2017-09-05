@@ -11,8 +11,12 @@ gradle plugin to generate Kotlin types for ktq graphql client
        repositories {
          maven { mavenCentral() }  // Or jcenter()
        }
-       
-3. Configure the plugin to target & compile your schema as kotlin by inserting a config block titled `ktq` in your `build.gradle`.
+
+3. Apply the plugin
+
+    `apply plugin: 'com.prestongarno.ktq'`
+
+4. Configure the plugin to target & compile your schema as kotlin by inserting a config block titled `ktq` in your `build.gradle`.
 See the next section for how to do this
 
 
