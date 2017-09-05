@@ -33,24 +33,27 @@ open class QCompilerConfig(project: Project) {
  * Adapter which sets default values if they aren't specified
  */
 class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
+
   private val configuration by configLoader
+
   override val schema: File by lazy {
     val prop = configuration.schemaProp
     (if (configuration.schemaProp.isPresent
         && prop.get().exists()
         && prop.get().isFile
-        && prop.get().canRead()) prop.get()
-    else File.createTempFile("null", "null").apply { setReadable(false) })
+        && prop.get().canRead())
+      prop.get()
+    else
+      File.createTempFile("null", "null").apply { setReadable(false) })
   }
   override val targetDir: File by lazy {
-    val prop = configuration.targetDirProp
-    (if (prop.isPresent
-        && prop.get().exists()
-        && prop.get().isDirectory
-        && prop.get().canExecute()) prop.get()
-    else
-      File("${QContext.project.buildDir.absolutePath}/generated/ktq/"))
+    configuration.targetDirProp.let {
+      if(it.isPresent)
+        it.get()
+      else
+        File("${QContext.project.buildDir.absolutePath}/generated/ktq/") }
   }
+
   override val packageName: String by lazy {
     val value = configuration.packageNameProp
     (if (value.isPresent && value.get().isNotEmpty())

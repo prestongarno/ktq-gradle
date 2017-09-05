@@ -31,4 +31,3 @@ fun File.child(relative: String): File = File("$absolutePath/$relative")
 
 fun String.asFile(): File = File(this)
 
-fun String.containsAny(match: List<String>): Boolean = match.find { contains(it) } != null

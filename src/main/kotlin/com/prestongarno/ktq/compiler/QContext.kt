@@ -18,7 +18,5 @@ object QContext {
         .getByType(QCompilerConfig::class.java)
   }
 
-  val isDryRun = ("" + System.getProperty("com.prestongarno.ktq.compiler.writeFiles")).isNotBlank()
-
   inline fun <reified T> logger(): Lazy<Logger> = lazy { LogManager.getLogger(T::class.java) }
 }
