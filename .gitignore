@@ -20,4 +20,4 @@ graphql.schema.json
 .DS_Store
 *.scratch
 *.scratch.md
-
+.DS_Store
