@@ -42,11 +42,11 @@ The list below shows all possible options which you can specify in the `ktq` con
 
         ktq {
         
-          schema 'src/resources/idl.graphqls'
+          schema = 'src/resources/idl.graphqls'
           
-          targetDir 'generated/kotlin/src/'
+          targetDir = 'generated/kotlin/src/'
           
-          packageName 'com.example.graphql'
+          packageName = 'com.example.graphql'
           
-          kotlinName 'GraphqlJvmTypes'
+          kotlinName = 'GraphqlJvmTypes'
         }

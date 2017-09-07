@@ -183,7 +183,7 @@ publishing {
 bintray {
   user BINTRAY_USER
   key BINTRAY_KEY
-  publish = false
+  publish = true
   override = true
 
   pkg {
@@ -200,7 +200,7 @@ bintray {
       into "/"
       includeEmptyDirs = false
     }
-    githubRepo = ''
+    githubRepo = 'https://github.com/prestongarno/ktq-gradle'
     githubReleaseNotesFile = 'README.md'
 
     version {
@@ -211,7 +211,7 @@ bintray {
         passphrase = GMAIL_GPG
       }
       mavenCentralSync {
-        sync = false
+        sync = true
         user = MAVEN2_USERNAME
         password = MAVEN2_PASSWORD
         close = '0'
