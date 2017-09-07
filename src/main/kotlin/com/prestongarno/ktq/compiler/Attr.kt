@@ -8,6 +8,7 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.reflect.jvm.jvmName
 
 object Attr {
   fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
@@ -93,9 +94,10 @@ object Attr {
       iface.fields.filter {
         it.name == fieldOnType.name
       }.map {
-        if (it.type != fieldOnType.type) {
-          System.err.println("property '${type.name}::${fieldOnType.name} ' declares type '${fieldOnType.type.name}'" +
-                                 "but inherits from '${iface.name}' which requires type '${it.type.name}'") }
+        if (it.type != fieldOnType.type)
+          System.err.println("property '${type.name}::${fieldOnType.name}'(${fieldOnType.type.name})" +
+                                 "inherits '${iface.name}::${it.name}'(${it.type.name})" +
+                                 "${fieldOnType::class.jvmName} but super was ${it::class.jvmName}")
         Pair(iface, it) }
     }.flatten().also { dup ->
       if (dup.size > 1) {
