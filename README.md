@@ -1,4 +1,7 @@
 # ktq-gradle
+
+[![Build Status](https://travis-ci.org/prestongarno/ktq-gradle.svg?branch=master)](https://travis-ci.org/prestongarno/ktq-gradle)
+
 Generates Kotlin types for the [ktq graphql client](https://github.com/prestongarno/ktq)
 
 ## How to use
