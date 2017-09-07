@@ -8,7 +8,6 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
-import kotlin.streams.toList
 
 object Attr {
   fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
@@ -64,14 +63,17 @@ object Attr {
           arg.type = comp.find(arg.type.name) ?:
               throw IllegalArgumentException("Unknown type '${arg.type.name}' on field '${field.name}', argument '${arg.name}', in type ${type.name}")
         }
-        checkDiamondOverride(field, type)
+        attrPolymorphism(field, type)
       }.filter { it.isPresent }
     }.flatMap { it.stream() }
         .map { it.get() }
         .forEach { conflict ->
           comp.addConflict(conflict)
-          types.filter { it is QTypeDef && (it.interfaces.containsAny(conflict.second.second)) && it.fieldMap[conflict.first.name] != null }
-              .forEach { it.fieldMap[conflict.first.name]!!.flag(QField.BuilderStatus.TOP_LEVEL) }
+          types.filter { it is QTypeDef
+              && (it.interfaces.containsAny(conflict.second.second))
+              && it.fieldMap[conflict.first.name] != null }
+              .forEach { it.fieldMap[conflict.first.name]!!
+                  .flag(QField.BuilderStatus.TOP_LEVEL) }
         }
     return comp
   }
@@ -81,22 +83,27 @@ object Attr {
     return false
   }
 
-  private fun checkDiamondOverride(fieldOnType: QField, type: QStatefulType)
+  private fun attrPolymorphism(fieldOnType: QField, type: QStatefulType)
       : Optional<Pair<QField, Pair<QTypeDef, List<QInterfaceDef>>>> {
+
     if (type !is QTypeDef)
       return Optional.empty()
+
     type.interfaces.map { iface ->
       iface.fields.filter {
         it.name == fieldOnType.name
       }.map {
-        Pair(iface, it)
-      }
+        if (it.type != fieldOnType.type) {
+          System.err.println("property '${type.name}::${fieldOnType.name} ' declares type '${fieldOnType.type.name}'" +
+                                 "but inherits from '${iface.name}' which requires type '${it.type.name}'") }
+        Pair(iface, it) }
     }.flatten().also { dup ->
       if (dup.size > 1) {
         if (fieldOnType.args.isNotEmpty()) {
           fieldOnType.flag(QField.BuilderStatus.TOP_LEVEL)
-          dup.forEach { it.second.flag(QField.BuilderStatus.TOP_LEVEL); it.second.abstract(true) }
-        }
+          dup.forEach {
+            it.second.flag(QField.BuilderStatus.TOP_LEVEL);
+            it.second.abstract(true) } }
 
         return Optional.of(Pair(fieldOnType, Pair(type, dup.map { (first) -> first })))
       }

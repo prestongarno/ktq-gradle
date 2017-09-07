@@ -147,17 +147,19 @@ class QField(name: String,
     )
   }
 
+  /**
+   * NOTE -> only compare the information available
+   * from a single scope (i.e. no inheritance)
+   */
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
 
     other as QField
 
-    if (type != other.type) return false
-    if (isList != other.isList) return false
-    if (nullable != other.nullable) return false
-
-    return true
+    return isList == other.isList
+      && nullable == other.nullable
+      && type == other.type
   }
 
   override fun hashCode(): Int {

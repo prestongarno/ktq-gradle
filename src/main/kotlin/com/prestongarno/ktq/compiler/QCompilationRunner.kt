@@ -16,16 +16,20 @@ open class QCompilationRunner : DefaultTask(),
 
   override fun getDescription(): String = "convert graphql schema to kotlin"
 
-  val output by lazy { targetDir.child(kotlinName) }
+  @JvmField @field:OutputDirectory var dummyForGradle : File? = null
+  @JvmField @field:Input var dummyFileForGradle : File? = null
+  val output by lazy { targetDir.child("${packageName.replace(".", "/")}/$kotlinName") }
 
   @TaskAction fun ktqCompile() {
     if (schema.canRead()
         && schema.absolutePath.startsWith(project.rootDir.absolutePath)) {
+      dummyFileForGradle = schema
       project.logger.info("generating graphql schema for target: $schema")
       QCompiler.initialize()
           .packageName(packageName)
           .compile(schema)
-          .writeToFile(output.absolutePath)
+          .writeToFile(output)
+      this.dummyForGradle = targetDir
       this.didWork = true
     } else {
       project.logger.info("no graphql schema specified, skipping")

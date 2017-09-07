@@ -6,8 +6,8 @@ import org.gradle.api.tasks.OutputDirectory
 import java.io.File
 
 interface QConfig {
-  @get:Input val schema: File
-  @get:OutputDirectory val targetDir: File
+  val schema: File
+  val targetDir: File
   val packageName: String
   val kotlinName: String
 }
@@ -15,16 +15,23 @@ interface QConfig {
 /**
  * Extension which is added by plugin to capture input
  */
-open class QCompilerConfig(project: Project) {
-  /** Actually, I don't even know why these are a thing on second thought
-   */
-  var schemaProp = project.property(File::class.java)
-  var targetDirProp = project.property(File::class.java)
-  var packageNameProp = project.property(String::class.java)
-  var kotlinNameProp = project.property(String::class.java)
+open class QCompilerConfig(val project: Project) {
+
+  @Input @JvmField var schemaProp = project.property(File::class.java)
+
+  @OutputDirectory @JvmField var targetDirProp = project.property(File::class.java)
+
+  @JvmField var packageNameProp = project.property(String::class.java)
+
+  @JvmField var kotlinNameProp = project.property(String::class.java)
 
   fun schema(value: String) = schemaProp.set(value.asFile())
-  fun targetDir(value: String) = targetDirProp.set(value.asFile())
+
+  fun targetDir(value: String) {
+    targetDirProp.set(value.asFile())
+    project.logger.info("setting target directory to: '${targetDirProp.get()}'")
+  }
+
   fun packageName(value: String) = packageNameProp.set(value)
   fun kotlinName(value: String) = kotlinNameProp.set(value)
 }
@@ -33,10 +40,8 @@ open class QCompilerConfig(project: Project) {
  * Adapter which sets default values if they aren't specified
  */
 class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
-
   private val configuration by configLoader
-
-  override val schema: File by lazy {
+  @get:Input override val schema: File by lazy {
     val prop = configuration.schemaProp
     (if (configuration.schemaProp.isPresent
         && prop.get().exists()
@@ -46,14 +51,14 @@ class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
     else
       File.createTempFile("null", "null").apply { setReadable(false) })
   }
-  override val targetDir: File by lazy {
+  @get:OutputDirectory override val targetDir: File by lazy {
     configuration.targetDirProp.let {
-      if(it.isPresent)
+      if (it.isPresent)
         it.get()
       else
-        File("${QContext.project.buildDir.absolutePath}/generated/ktq/") }
+        File("${QContext.project.buildDir.absolutePath}/generated/ktq/")
+    }
   }
-
   override val packageName: String by lazy {
     val value = configuration.packageNameProp
     (if (value.isPresent && value.get().isNotEmpty())
