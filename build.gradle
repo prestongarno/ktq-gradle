@@ -181,8 +181,8 @@ publishing {
 }
 
 bintray {
-  user "${System.getEnv("BINTRAY_USER")}"
-  key "${System.getEnv("BINTRAY_KEY")}"
+  user "${System.getenv("BINTRAY_USER")}"
+  key "${System.getenv("BINTRAY_KEY")}"
   publish = true
   override = true
 
@@ -212,8 +212,8 @@ bintray {
       }
       mavenCentralSync {
         sync = true
-        user = "${System.getEnv("MAVEN2_USERNAME")}"
-        password = "${System.getEnv("MAVEN2_PASSWORD")}"
+        user = "${System.getenv("MAVEN2_USERNAME")}"
+        password = "${System.getenv("MAVEN2_PASSWORD")}"
         close = '0'
       }
     }
