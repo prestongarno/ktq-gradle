@@ -17,23 +17,10 @@ interface QConfig {
  */
 open class QCompilerConfig(val project: Project) {
 
-  @Input @JvmField var schemaProp = project.property(File::class.java)
-
-  @OutputDirectory @JvmField var targetDirProp = project.property(File::class.java)
-
-  @JvmField var packageNameProp = project.property(String::class.java)
-
-  @JvmField var kotlinNameProp = project.property(String::class.java)
-
-  fun schema(value: String) = schemaProp.set(value.asFile())
-
-  fun targetDir(value: String) {
-    targetDirProp.set(value.asFile())
-    project.logger.info("setting target directory to: '${targetDirProp.get()}'")
-  }
-
-  fun packageName(value: String) = packageNameProp.set(value)
-  fun kotlinName(value: String) = kotlinNameProp.set(value)
+@get:Input  @field:Input var schema = project.property(File::class.java)
+@get:Input  @field:Input var targetDir = project.property(File::class.java)
+@get:Input  @field:Input var packageName = project.property(String::class.java)
+@get:Input  @field:Input var kotlinName = project.property(String::class.java)
 }
 
 /**
@@ -42,8 +29,8 @@ open class QCompilerConfig(val project: Project) {
 class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
   private val configuration by configLoader
   @get:Input override val schema: File by lazy {
-    val prop = configuration.schemaProp
-    (if (configuration.schemaProp.isPresent
+    val prop = configuration.schema
+    (if (configuration.schema.isPresent
         && prop.get().exists()
         && prop.get().isFile
         && prop.get().canRead())
@@ -52,7 +39,7 @@ class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
       File.createTempFile("null", "null").apply { setReadable(false) })
   }
   @get:OutputDirectory override val targetDir: File by lazy {
-    configuration.targetDirProp.let {
+    configuration.targetDir.let {
       if (it.isPresent)
         it.get()
       else
@@ -60,17 +47,17 @@ class ConfigAdapter(configLoader: Lazy<QCompilerConfig>) : QConfig {
     }
   }
   override val packageName: String by lazy {
-    val value = configuration.packageNameProp
+    val value = configuration.packageName
     (if (value.isPresent && value.get().isNotEmpty())
       value.get()
     else
       "com.prestongarno.ktq.schema")
   }
   override val kotlinName: String by lazy {
-    val value = configuration.kotlinNameProp
+    val value = configuration.kotlinName
     (if (value.isPresent && value.get().isNotEmpty())
       value.get()
-    else configuration.schemaProp.get().nameWithoutExtension
+    else configuration.schema.get().nameWithoutExtension
         .toJavaFileCompat())
   }
 }

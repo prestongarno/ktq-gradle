@@ -14,7 +14,8 @@ object Attr {
   fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
     verifyTypesToInterfaces(comp.types, comp.ifaces)
     attrUnionTypes(comp.unions, comp)
-    attrFieldTypes(comp.types + comp.ifaces + comp.inputs, comp)
+    attrFieldTypes(comp.ifaces + comp.inputs, comp)
+    attrFieldTypes(comp.types, comp)
     validateNames(comp)
     return comp
   }
@@ -93,10 +94,9 @@ object Attr {
       iface.fields.filter {
         it.name == fieldOnType.name
       }.map {
-        require (it.type != fieldOnType.type) {
+        require (it.type == fieldOnType.type) {
           "property '${type.name}::${fieldOnType.name}'(${fieldOnType.type.name})" +
-             "inherits '${iface.name}::${it.name}'(${it.type.name})" +
-             "${fieldOnType::class.jvmName} but super was ${it::class.jvmName}" }
+             "inherits '${iface.name}::${it.name}'(${it.type.name})" }
         Pair(iface, it) }
     }.flatten().also { dup ->
       if (dup.size > 1) {
