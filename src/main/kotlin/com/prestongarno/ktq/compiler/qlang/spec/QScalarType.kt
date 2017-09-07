@@ -55,7 +55,8 @@ enum class Scalar(val token: String) {
     private val values: Map<String, Scalar>
 
     init {
-      values = Arrays.stream(enumValues<Scalar>()).collect(Collectors.toMap({ t -> t.token }, { t -> t }))
+      values = Arrays.stream(enumValues<Scalar>())
+          .collect(Collectors.toMap({ t -> t.token }, { t -> t }))
     }
 
     fun match(keyword: String): Scalar = values[keyword] ?: UNKNOWN

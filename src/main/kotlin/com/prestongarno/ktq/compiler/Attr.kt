@@ -32,13 +32,12 @@ object Attr {
       val fields = t.fields.map { sym -> Pair(sym.name, sym) }.toMap()
 
       t.interfaces.map { iface ->
-        val attrIf = globalIface[iface.name] ?: throw IllegalArgumentException("No interface definition " +
-                                                                                   "'${iface.name}' found (declared on type ${t.name})")
+        val attrIf = globalIface[iface.name] ?: throw IllegalArgumentException(
+            "No interface definition '${iface.name}' found (declared on type ${t.name})")
         attrInterfaces.add(0, attrIf)
         attrIf.fields.forEach { field ->
-          fields[field.name]?.inheritedFrom?.add(attrIf) ?:
-              throw IllegalArgumentException("Type '${t.name}' implements ${attrIf.name} " +
-                                                 "but does not contain a field named '${field.name}' in its declaration")
+          fields[field.name]?.inheritedFrom?.add(attrIf) ?: throw IllegalArgumentException(
+              "Type '${t.name}' implements ${attrIf.name} but does not contain a field named '${field.name}' in its declaration")
         }
         attrIf
       }.also { t.interfaces = attrInterfaces }
@@ -58,11 +57,11 @@ object Attr {
   private fun attrFieldTypes(types: List<QStatefulType>, comp: QCompilationUnit): QCompilationUnit {
     types.parallelStream().map { type ->
       type.fields.map { field ->
-        field.type = comp.find(field.type.name) ?:
-            throw IllegalArgumentException("Unknown type '${field.type.name}' on field '${field.name}' in type ${type.name}")
+        field.type = comp.find(field.type.name) ?: throw IllegalArgumentException(
+            "Unknown type '${field.type.name}' on field '${field.name}' in type ${type.name}")
         field.args.forEach { arg ->
-          arg.type = comp.find(arg.type.name) ?:
-              throw IllegalArgumentException("Unknown type '${arg.type.name}' on field '${field.name}', argument '${arg.name}', in type ${type.name}")
+          arg.type = comp.find(arg.type.name) ?: throw IllegalArgumentException(
+              "Unknown type '${arg.type.name}' on field '${field.name}', argument '${arg.name}', in type ${type.name}")
         }
         attrPolymorphism(field, type)
       }.filter { it.isPresent }
