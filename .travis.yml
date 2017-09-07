@@ -1,33 +1,26 @@
 language: java
 
 jdk:
-  - oraclejdk8
+- oraclejdk8
 
-script: gradle clean test build
-
-after_success:
-  - .buildscript/deploy_snapshot.sh
-
-env:
-  global:
-    - ***REMOVED***
-    - ***REMOVED***
-    - ***REMOVED***
-    - ***REMOVED***
-    - ***REMOVED***
-    - ***REMOVED***
-    - ***REMOVED***
+script: "./gradlew clean test build"
 
 branches:
   only:
-    - master
-    - development
-
+  - master
+  - development
 notifications:
   email: false
-
 sudo: false
-
+before_install:
+- openssl aes-256-cbc -K $encrypted_d8db5bc5ce8b_key -iv $encrypted_d8db5bc5ce8b_iv
+  -in gradle.properties.enc -out /Users/admin/.gradle/gradle.properties -d
+- openssl aes-256-cbc -K $encrypted_d8db5bc5ce8b_key -iv $encrypted_d8db5bc5ce8b_iv
+  -in ./buildscript/keys.gpg.enc -out .buildscript/ -d
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.m2
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"

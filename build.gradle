@@ -1,11 +1,9 @@
-import java.util.function.Function
-
 buildscript {
   ext.kotlin_version = '1.1.4-3'
   ext.sourceCompatibility = 1.8
   ext.clientId = 'ktq-gradle'
   ext.projectDescription = 'compiles graphql schemas to kotlin type hierarchies'
-  ext.gitBaseUrl = System.getenv("GIT_BASE_URL") + '/ktq-gradle'
+  ext.gitBaseUrl = GIT_BASE_URL + '/ktq-gradle'
   ext.projLicenseUrl = "$gitBaseUrl/LICENSE.txt"
   ext.localStaging = "$buildDir/staging/"
   ext.localBintrayStaging = "$buildDir/bintray/"
@@ -120,12 +118,8 @@ sourceSets {
   }
 }
 
-def checkIsRelease = {
-  if (rootProject.version.endsWith("SNAPSHOT"))
-    throw new StopActionException("Specify '-Prelease=true to run this task") }
-
 publish.dependsOn(tasks.clean)
-bintrayUpload.dependsOn(checkIsRelease, tasks.publish)
+bintrayUpload.dependsOn(tasks.publish)
 
 publishing {
   publications {
@@ -180,11 +174,16 @@ publishing {
   }
 }
 
+bintrayUpload {
+  doFirst { println("Version is $version") }
+}
+
 bintray {
-  user "${System.getenv("BINTRAY_USER")}"
-  key "${System.getenv("BINTRAY_KEY")}"
-  publish = true
-  override = true
+  user BINTRAY_USER
+  key BINTRAY_KEY
+  dryRun = rootProject.version.endsWith("SNAPSHOT")
+  publish = false
+  override = false
 
   pkg {
     repo = 'ktq'
@@ -196,6 +195,7 @@ bintray {
     filesSpec {
       from(localStaging) {
         include "**/*.md5"
+        exclude "**/*.md5*"
       }
       into "/"
       includeEmptyDirs = false
@@ -212,8 +212,8 @@ bintray {
       }
       mavenCentralSync {
         sync = true
-        user = "${System.getenv("MAVEN2_USERNAME")}"
-        password = "${System.getenv("MAVEN2_PASSWORD")}"
+        user = MAVEN2_USERNAME
+        password = MAVEN2_PASSWORD
         close = '0'
       }
     }
@@ -229,8 +229,4 @@ compileTestKotlin {
   kotlinOptions {
     jvmTarget = "1.8"
   }
-}
-
-task checkVersion {
-  println("Version is $version")
 }
