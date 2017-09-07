@@ -25,9 +25,7 @@ abstract class QStatefulType(name: String, val fields: List<QField>) : QDefinedT
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-
-    other as QStatefulType
+    if (other !is QStatefulType) return false
 
     return fields.containsAll(other.fields)
   }
@@ -46,8 +44,8 @@ class QUnknownType(name: String) : QDefinedType(name) {
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-    return name == (other as QUnknownType).name
+    if (other !is QDefinedType) return false
+    return name == other.name
   }
 
   override fun hashCode(): Int { return javaClass.hashCode() }
@@ -56,8 +54,8 @@ class QUnknownType(name: String) : QDefinedType(name) {
 class QUnknownInterface(name: String) : QInterfaceDef(name, emptyList()) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-    return name == (other as QUnknownInterface).name
+    if (other !is QInterfaceDef) return false
+    return name == other.name
   }
 
   override fun hashCode(): Int { return javaClass.hashCode() }

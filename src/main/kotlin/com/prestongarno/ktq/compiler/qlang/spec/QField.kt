@@ -153,9 +153,7 @@ class QField(name: String,
    */
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-
-    other as QField
+    if (other !is QField) return false
 
     return isList == other.isList
       && nullable == other.nullable
