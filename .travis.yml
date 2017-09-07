@@ -10,6 +10,13 @@ after_success:
 
 env:
   global:
+    - ***REMOVED***
+    - ***REMOVED***
+    - ***REMOVED***
+    - ***REMOVED***
+    - ***REMOVED***
+    - ***REMOVED***
+    - ***REMOVED***
 
 branches:
   only:
