@@ -15,6 +15,7 @@ interface QConfig {
  * Extension which is added by plugin to capture input
  */
 open class QCompilerConfig(val project: Project) {
+<<<<<<< HEAD
   @JvmField var schema = project.property(File::class.java)
   @JvmField var targetDir = project.property(File::class.java)
   @JvmField var packageName = project.property(String::class.java)
@@ -74,4 +75,3 @@ class ConfigAdapter(val config: Lazy<QCompilerConfig>) : QConfig {
       if (isPresent) get().nameWithoutExtension.toJavaFileCompat() else "GraphTypes"
     })
   }
-}

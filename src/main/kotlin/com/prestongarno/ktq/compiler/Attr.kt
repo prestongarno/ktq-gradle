@@ -95,7 +95,7 @@ object Attr {
         it.name == fieldOnType.name
       }.map {
         require (it.type == fieldOnType.type) {
-          "property '${type.name}::${fieldOnType.name}'(${fieldOnType.type.name})" +
+          "Incompatible types: property '${type.name}::${fieldOnType.name}'(${fieldOnType.type.name})" +
              "inherits '${iface.name}::${it.name}'(${it.type.name})" }
         Pair(iface, it) }
     }.flatten().also { dup ->
