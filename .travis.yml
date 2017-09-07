@@ -1,10 +1,7 @@
 language: java
-
 jdk:
 - oraclejdk8
-
 script: "./gradlew clean test build"
-
 branches:
   only:
   - master
@@ -12,11 +9,6 @@ branches:
 notifications:
   email: false
 sudo: false
-before_install:
-- openssl aes-256-cbc -K $encrypted_d8db5bc5ce8b_key -iv $encrypted_d8db5bc5ce8b_iv
-  -in ./.buildscript/gradle.properties.enc -out ~/.gradle/gradle.properties -d
-- openssl aes-256-cbc -K $encrypted_d8db5bc5ce8b_key -iv $encrypted_d8db5bc5ce8b_iv
-  -in ./.buildscript/keys.gpg.enc -out .buildscript/keys.gpg -d
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -24,3 +16,8 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
+env:
+  global:
+    secure: TXVbnZdjRMMkM/ZTfnLP6j3OnfllciFMCXBmJcelW/F2Ioc8rHC0cJjBfQHtrMs6V88M9uerkHyEl1uKOfXaEGb8lY4vjmxRvss16D/iBtWLQa+cRnXB88+MaeNK9VE9/sotZBerg3s/eWZ4xIHIhn4M/ky5VVfxf0gBDXqOt+TgQbJb9Bz54AdEZ0ClhpL4MjUryIlg/OL5F10bVFowEw0If9kDpxL+zEzXGD68iE9KGyNmgyMG1EAR1uZlAq2WnCWD2KmAYl7TH7puF8ci82R2XSEQbhimSkt9y9Hp/3b3s+c9GUTE8QnklimyJXrpwC7CgaGUsfm5NhgIGU4nZ2Qicu6HGpVJyQWXxwQe+erV+/DHfH9sKsKgU0+ttePaamWJ2WA0sQqlg6fefS8gQJv3S1fA6KUkY9ZN/TE8T0de+MFL6YJr3IUq58MIUYojA0oifaPIUmTPXOKa1dq+Su1t1tF+pCZzjWywbAZ12fZSoKVkDQMgzJ6grv1V3Wj2gajq+C4Xk3eTdRi2iWMNfrTAAOLbHZpO2HIkDZpUqjOOr166BMVzyoMasNDP2x8h62jgRcgDksnCU9mzgFyMXUdkrnIY8MEL0VP9in5SfVEP2i8KF65a1tn7Ot5bwzVpC6ZrM1XXd3545Ord/mIfx2EDKS1omOmbnqU3wQFdZvU=
+before_install:
+  - echo $GMAIL_GPG | gpg --decrypt --passphrase-fd 0 .buildscript/gradle.properties.gpg > ~/.gradle/gradle.properties
