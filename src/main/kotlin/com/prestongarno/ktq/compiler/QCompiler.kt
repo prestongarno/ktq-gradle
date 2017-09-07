@@ -19,21 +19,22 @@ import kotlin.reflect.KClass
 
 class QCompiler internal constructor(val source: File, builder: Builder) {
   val packageName = builder.packageName
-  val outputName = builder.outputName
   var compilation: QCompilationUnit? = null
   var rawResult: String = ""
 
   companion object {
-    fun initialize(destination: String = "GraphTypes") = Builder(destination)
+    fun initialize() = Builder()
     // String literals and replacement because of missing kotlinpoet features
     val LESS_THAN = "LESS_THAN"
     val GREATER_THAN = "GREATER_THAN"
     val COMMA = "_COMMA_"
   }
 
-  class Builder internal constructor(internal var outputName: String) {
+  class Builder internal constructor() {
     internal var packageName: String = "com.prestongarno.ktq"
+
     fun packageName(name: String) = apply { this.packageName = name }
+
     fun compile(file: File, result: (QCompilationUnit) -> Unit = {}): QCompiler {
       val qCompiler = QCompiler(file, this)
       qCompiler.compile()
@@ -47,16 +48,18 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
       consumer(rawResult)
       return this
     }
-    val ktBuilder = KotlinFile.builder(packageName, outputName)
+    val ktBuilder = KotlinFile.builder(packageName, "YouShouldntSeeThis")
+
     getResolvedImports().mapNotNull {
       it.simpleName
     }.let { ktBuilder.addStaticImport("com.prestongarno.ktq", *it.toTypedArray()) }
+
     getSchemaTypeHelpers().mapNotNull {
       it.simpleName
     }.let { ktBuilder.addStaticImport(com.prestongarno.ktq.QSchemaType::class, *it.toTypedArray()) }
-    compilation?.getAllTypes()?.forEach {
-      ktBuilder.addType(it)
-    }
+
+    compilation?.getAllTypes()?.forEach { ktBuilder.addType(it) }
+
     val suppressedWarnings = listOf(
         "@file:Suppress(\"unused\")"
     )
@@ -76,17 +79,17 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
 
   fun writeToFile(destination: String) = apply {
     val outResolved =
-        if (outputName.endsWith(".kt"))
-          outputName
-        else outputName + ".kt"
+        if (destination.endsWith(".kt"))
+          destination
+        else destination + ".kt"
 
-      writeToFile(File("$destination/$outResolved"))
+    writeToFile(File("$destination/$outResolved"))
   }
 
   fun writeToFile(destination: File) = apply {
     destination.parent.asFile().let {
-      if (!it.exists()) it.mkdirs() }
-
+      if (!it.exists()) it.mkdirs()
+    }
     destination.printWriter()
         .use { out -> out.write(rawResult) }
   }

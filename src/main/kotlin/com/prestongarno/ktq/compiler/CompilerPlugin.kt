@@ -21,13 +21,17 @@ fun String.toJavaFileCompat(): String {
           it.toString().matches("[a-zA-Z]".toRegex())
         }
         if (firstLetter > -1)
-          it.substring(firstLetter)
+          it.substring(firstLetter).let {
+            "${it[0].toUpperCase()}${it.substring(1)}"
+          }.let {
+            if (!it.endsWith(".kt")) it + ".kt" else it
+          }
         else throw IllegalArgumentException("Can not generate schema for '$this': Please use a " +
             "java-compatible name for your schema or specify a name in your buildscript")
       }
 }
 
-fun File.child(relative: String): File = File("$absolutePath/$relative")
+fun File.child(relative: String): File = File("${this.path}/$relative")
 
 fun String.asFile(): File = File(this)
 
