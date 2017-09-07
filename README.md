@@ -19,6 +19,10 @@ Generates Kotlin types for the [ktq graphql client](https://github.com/prestonga
 4. Configure the plugin to target & compile your schema as kotlin by inserting a config block titled `ktq` in your `build.gradle`.
 See the next section for how to do this
 
+5. If applicable: Upgrade the gradle wrapper to gradle `4.1`:
+
+      `gradle wrapper --gradle-version 4.1`
+
 
 ## Configuration
 
