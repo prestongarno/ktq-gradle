@@ -1,36 +1,36 @@
 package com.prestongarno.ktq.compiler
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.Serializable
 
-/**
- * Actual task which lazy loads the values from config
+/** Actual task which lazy loads the values from config
  */
-open class QCompilationRunner : DefaultTask() {
-  val config = ConfigAdapter(lazy { QContext.configuration })
+open class QCompilationRunner : DefaultTask(), Serializable {
+
   override fun getDescription(): String = "convert graphql schema to kotlin"
 
-  @get:OutputFile val output =
-      project.provider({ config.targetDir.child("${config.packageName.replace(".", "/")}/$config.kotlinName")  })
+    @TaskAction fun ktqCompile() {
+      ConfigAdapter(lazy {project.extensions.findByType(QCompilerConfig::class.java)}).run {
+        if (schema.canRead() && schema.absolutePath.startsWith(project.rootDir.absolutePath)) {
+          project.logger.info("generating graphql schema for target: " +
+                                  "${QContext.configuration(project).schema}")
 
-  @get:Input val schemaFuture = project.provider({ config.schema })
-  @get:Input val packFuture = project.provider({ config.packageName })
-  @get:Input val kotFuture = project.provider({ config.kotlinName })
+          QCompiler.initialize()
+              .packageName(packageName)
+              .compile(schema)
+              .writeToFile(targetDir.child("${packageName.replace(".", "/")}/${kotlinName}"))
 
-  @TaskAction fun ktqCompile() {
-    if (schemaFuture.get().canRead()
-        && schemaFuture.get().absolutePath.startsWith(project.rootDir.absolutePath)) {
-      project.logger.info("generating graphql schema for target: ${config.schema}")
-      QCompiler.initialize()
-          .packageName(packFuture.get())
-          .compile(schemaFuture.get())
-          .writeToFile(output.get())
-      this.didWork = true
-    } else {
-      project.logger.info("no graphql schema specified, skipping")
+        } else {
+          project.logger.info("no graphql schema specified skipping")
+        }
+      }
     }
-  }
+
+    private fun writeObject(out: java.io.ObjectOutputStream) { out.defaultWriteObject() }
+
+    private fun readObject(inStream: java.io.ObjectInputStream) { inStream.defaultReadObject() }
+
+    private fun readObjectNoData() {}
 }
 
