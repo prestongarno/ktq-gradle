@@ -5,7 +5,7 @@ buildscript {
   ext.sourceCompatibility = 1.8
   ext.clientId = 'ktq-gradle'
   ext.projectDescription = 'compiles graphql schemas to kotlin type hierarchies'
-  ext.gitBaseUrl = GIT_BASE_URL + '/ktq-gradle'
+  ext.gitBaseUrl = System.getenv("GIT_BASE_URL") + '/ktq-gradle'
   ext.projLicenseUrl = "$gitBaseUrl/LICENSE.txt"
   ext.localStaging = "$buildDir/staging/"
   ext.localBintrayStaging = "$buildDir/bintray/"
@@ -181,8 +181,8 @@ publishing {
 }
 
 bintray {
-  user BINTRAY_USER
-  key BINTRAY_KEY
+  user "${System.getEnv("BINTRAY_USER")}"
+  key "${System.getEnv("BINTRAY_KEY")}"
   publish = true
   override = true
 
@@ -212,8 +212,8 @@ bintray {
       }
       mavenCentralSync {
         sync = true
-        user = MAVEN2_USERNAME
-        password = MAVEN2_PASSWORD
+        user = "${System.getEnv("MAVEN2_USERNAME")}"
+        password = "${System.getEnv("MAVEN2_PASSWORD")}"
         close = '0'
       }
     }
