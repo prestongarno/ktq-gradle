@@ -7,8 +7,7 @@ import java.io.File
 open class CompilerPlugin : Plugin<Project> {
 
   override fun apply(project: Project?) {
-    QContext.project = project!!
-    project.extensions?.create("ktq", QCompilerConfig::class.java, project)
+    project!!.extensions?.create("ktq", QCompilerConfig::class.java, project)
     project.tasks.create("compileGraphql", QCompilationRunner::class.java)
   }
 }

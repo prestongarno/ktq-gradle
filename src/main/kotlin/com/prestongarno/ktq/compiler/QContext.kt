@@ -9,14 +9,8 @@ import org.gradle.api.Project
  */
 object QContext {
 
-  lateinit var project: Project
-
   /** Config/Extension for capturing input
    */
-  val configuration: QCompilerConfig by lazy {
-    project.extensions
-        .getByType(QCompilerConfig::class.java)
-  }
-
-  inline fun <reified T> logger(): Lazy<Logger> = lazy { LogManager.getLogger(T::class.java) }
+  fun configuration(proj: Project): QCompilerConfig =
+    (proj.extensions.getByName("ktq") as QCompilerConfig?)!!
 }

@@ -36,7 +36,7 @@ object QLexer {
         .mapNotNull { result -> result.groups }
         .filter { it.isNotEmpty() }
         .map { group ->
-          val name = group[1]!!.value // TODO need more syntax checking?
+          val name = group[1]!!.value
           val type = group[6]!!.value
           val args = if (group[2] != null) {
             group[3]!!.value
@@ -56,7 +56,7 @@ object QLexer {
               directive,
               isList,
               nullable,
-              comments.filter { (range, value) ->
+              comments.filter { (range) ->
                 range.last < group[0]!!.range.start
               }.sortedBy { it.first.first }
                   .toList()
@@ -81,7 +81,7 @@ object QLexer {
     return FieldInputArg(name, type, defaultValue, isList, isNullable)
   }
 
-  private inline fun checkBracketsForList(type: String) =
+  private fun checkBracketsForList(type: String) =
       if (!type.startsWith("[") || !type.endsWith("]")) throw IllegalArgumentException("Unclosed bracket: '$type'") else 1
 
 
