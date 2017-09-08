@@ -18,7 +18,8 @@ open class QCompilationRunner : DefaultTask(), Serializable {
 
           QCompiler.initialize()
               .packageName(packageName)
-              .compile(schema)
+              .schema(schema)
+              .compile()
               .writeToFile(targetDir.child("${packageName.replace(".", "/")}/${kotlinName}"))
 
         } else {

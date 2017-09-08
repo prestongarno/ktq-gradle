@@ -2,6 +2,7 @@ package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.TypeArgBuilder
+import com.prestongarno.ktq.compiler.qlang.spec.QSchemaType
 import com.prestongarno.ktq.compiler.qlang.spec.QDefinedType
 import com.prestongarno.ktq.compiler.qlang.spec.QEnumDef
 import com.prestongarno.ktq.compiler.qlang.spec.QField
@@ -22,35 +23,37 @@ import java.util.*
  * list of Strings for which each entry represents a declaration within a type declaration (primitive model, field
  * type, or field list of types
  */
-class QCompilationUnit(val types: List<QTypeDef>,
-                       val ifaces: List<QInterfaceDef>,
-                       val inputs: List<QInputType>,
-                       val scalar: List<QScalarType>,
-                       val enums: List<QEnumDef>,
-                       val unions: List<QUnionTypeDef>) {
+class QCompilationUnit(val all: Set<QSchemaType<*>>) {
 
-  private fun <T : QDefinedType> addAllStuff(vararg foo: List<T>): List<QDefinedType> {
-    val whyThis = LinkedList<QDefinedType>()
-    for (f in foo)
-      whyThis.addAll(f)
-    Collections.sort(whyThis, { o1, o2 -> o1.name.compareTo(o2.name) })
-    return whyThis
+  val types: List<QTypeDef> = filter(all)
+  val ifaces: List<QInterfaceDef> = filter(all)
+  val inputs: List<QInputType> = filter(all)
+  val scalar: List<QScalarType> = filter(all)
+  val enums: List<QEnumDef> = filter(all)
+  val unions: List<QUnionTypeDef> = filter(all)
+
+  init {
+    all.sortedBy { it.name }
   }
 
-  val all: Array<QDefinedType> = addAllStuff(types, ifaces, unions, inputs, scalar, enums).toTypedArray()
+  private inline fun <reified T> filter(from: Set<Any>): List<T> = from.filterIsInstance<T>()
+
+  private fun <T : QDefinedType> addAllStuff(vararg foo: List<T>): List<QDefinedType> =
+      foo.toSet().flatten().sortedBy { it.name }
+        //Collections.sort(this, { o1, o2 -> o1.name.compareTo(o2.name) }) }
+
 
   fun getAllTypes(): List<TypeSpec> =
-      resolveConflicts().toMutableList()
+      resolveConflicts()
           .also { lizt ->
-            lizt.addAll(
-                all.map {
-                  if (it.description.isNotEmpty())
-                    it.toKotlin()
-                        .toBuilder()
-                        .addKdoc(CodeBlock.of(it.description, "%W"))
-                        .build()
-                  else it.toKotlin()
-                })
+            lizt.addAll(all.filterIsInstance<QStatefulType>().map {
+              if (it.description.isNotEmpty())
+                it.toKotlin()
+                    .toBuilder()
+                    .addKdoc(CodeBlock.of(it.description, "%W"))
+                    .build()
+              else it.toKotlin()
+            }.toList())
           }
 
   private val conflictOverrides = mutableMapOf<QField, Pair<QTypeDef, List<QInterfaceDef>>>()
@@ -59,41 +62,10 @@ class QCompilationUnit(val types: List<QTypeDef>,
       conflictOverrides.put(conflict.first, conflict.second)
 
   val stateful: List<QStatefulType> by lazy {
-    LinkedList<QStatefulType>()
-        .addAllAnd(types)
-        .addAllAnd(ifaces)
-        .addAllAnd(inputs)
+    LinkedList<QStatefulType>().apply { addAll(types); addAll(ifaces); addAll(inputs) }
   }
 
-  private fun <T : Any> MutableList<T>.addAllAnd(values: Collection<T>): MutableList<T> {
-    this.addAll(0, values)
-    return this
-  }
-
-  fun find(key: String) = all.find(key)
-
-  /** Extension method for binary searching all types for attributing all fields
-   */
-  private fun Array<QDefinedType>.find(key: String): QDefinedType? {
-    // if scalar type getFromMap the predefined ones in Scalar companion object
-    val match = Scalar.match(key)
-    if (match != Scalar.UNKNOWN) return Scalar.getType(match)
-
-    var low = 0
-    var high = size - 1
-    var mid: Int
-    while (low <= high) {
-      mid = (low + high).ushr(1)
-      val cmp = this[mid].name.compareTo(key);
-      if (cmp < 0)
-        low = mid + 1;
-      else if (cmp > 0)
-        high = mid - 1;
-      else
-        return this[mid]; // key found
-    }
-    return null
-  }
+  fun findType(key: String) = stateful.find { it.name == key }?: Scalar.getType(Scalar.match(key))
 
   private fun resolveConflicts(): MutableList<TypeSpec> {
     return this.conflictOverrides.toList().mapNotNull { (symbol, pair: Pair<QTypeDef, List<QInterfaceDef>>) ->
@@ -117,10 +89,10 @@ class QCompilationUnit(val types: List<QTypeDef>,
             symbol.isList,
             symbol.nullable).also { it.flag(QField.BuilderStatus.TOP_LEVEL); it.abstract(true) }
         buildArgBuilder(dummy,
-            if (dummy.type is QScalarType || dummy.type is QEnumDef)
-              ArgBuilder::class
-            else TypeArgBuilder::class,
-            superclazzType)
+                        if (dummy.type is QScalarType || dummy.type is QEnumDef)
+                          ArgBuilder::class
+                        else TypeArgBuilder::class,
+                        superclazzType)
             .addModifiers(KModifier.ABSTRACT)
             .build()
       } else null
@@ -137,13 +109,12 @@ class QCompilationUnit(val types: List<QTypeDef>,
 
       if (verifi.isPresent)
         return Optional.of(Throwable("Input argument mismatch on type ${declaring.name}: ", verifi.get()))
-
       val comparingTo = next.fields.find { it.type.name == symbol.type.name }!!
 
       if (first.type != comparingTo.type)
         return Optional.of(IllegalStateException("Conflicting overriding property declarations on [ ${declaring.name}.${symbol.name} ] " +
-            "from interfaces ${curr.name} ( ${symbol.name} declares type ${first.type.name} )" +
-            " and ${next.name} (declares type ${comparingTo.type.name} )"))
+                                                     "from interfaces ${curr.name} ( ${symbol.name} declares type ${first.type.name} )" +
+                                                     " and ${next.name} (declares type ${comparingTo.type.name} )"))
 
       next
     })
@@ -172,5 +143,4 @@ class QCompilationUnit(val types: List<QTypeDef>,
       "$ arg $propName overriding ${boolToStr(!concreteFieldCondition, property)} $propName arg $argName"
 
   private fun boolToStr(ifIs: Boolean, name: String) = if (ifIs) "" else "non-$name"
-
 }

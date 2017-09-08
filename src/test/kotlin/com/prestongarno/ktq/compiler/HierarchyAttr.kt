@@ -12,7 +12,8 @@ class HierarchyAttr {
     try {
       loadSchema("test01.graphqls").let { file ->
         QCompiler.initialize()
-            .compile(file)
+            .schema(file)
+            .compile()
       }
       fail()
     } catch (expected: IllegalArgumentException) {

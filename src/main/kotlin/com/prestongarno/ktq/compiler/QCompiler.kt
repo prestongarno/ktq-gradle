@@ -15,12 +15,23 @@ import com.prestongarno.ktq.TypeArgBuilder
 import com.prestongarno.ktq.TypeListArgBuilder
 import com.squareup.kotlinpoet.*
 import java.io.File
+import java.io.InputStream
+import java.io.Reader
 import kotlin.reflect.KClass
 
-class QCompiler internal constructor(val source: File, builder: Builder) {
-  val packageName = builder.packageName
-  var compilation: QCompilationUnit? = null
-  var rawResult: String = ""
+class QCompiler internal constructor(builder: Builder) {
+  private val packageName = builder.packageName
+  private lateinit var compilation: QCompilationUnit
+  private var rawResult: String = ""
+
+  internal constructor(builder: Builder, consumer: (QCompilationUnit) -> Unit) : this(builder) {
+    compilation = Attr.attributeCompilationUnit(
+        (if (builder.schemaFile != null)
+          QLParser.parse(builder.schemaFile!!)
+        else QLParser.parse(builder.schemaValue?: throw IllegalStateException("No input."))))
+    this.result { compilation }
+    consumer(this.compilation)
+  }
 
   companion object {
     fun initialize() = Builder()
@@ -28,19 +39,6 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
     val LESS_THAN = "LESS_THAN"
     val GREATER_THAN = "GREATER_THAN"
     val COMMA = "_COMMA_"
-  }
-
-  class Builder internal constructor() {
-    internal var packageName: String = "com.prestongarno.ktq"
-
-    fun packageName(name: String) = apply { this.packageName = name }
-
-    fun compile(file: File, result: (QCompilationUnit) -> Unit = {}): QCompiler {
-      val qCompiler = QCompiler(file, this)
-      qCompiler.compile()
-      result(qCompiler.compile());
-      return qCompiler
-    }
   }
 
   fun result(consumer: (String) -> Unit) = apply {
@@ -58,12 +56,18 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
       it.simpleName
     }.let { ktBuilder.addStaticImport(com.prestongarno.ktq.QSchemaType::class, *it.toTypedArray()) }
 
-    compilation?.getAllTypes()?.forEach { ktBuilder.addType(it) }
+    compilation
+        .getAllTypes()
+        .forEach {
+          ktBuilder.addType(it)
+        }
 
     val suppressedWarnings = listOf(
         "@file:Suppress(\"unused\")"
     )
+
     val rawFile = ktBuilder.build().toString()
+
     val result = suppressedWarnings.joinToString("\n") +
         "\n\n" +
         (rawFile.replace("ArgBuilder(.*)_by_args".toRegex(), "ArgBuilder$1 by args")
@@ -94,10 +98,18 @@ class QCompiler internal constructor(val source: File, builder: Builder) {
         .use { out -> out.write(rawResult) }
   }
 
-  fun compile(): QCompilationUnit {
-    this.compilation = Attr.attributeCompilationUnit(QLParser().parse(this.source))
-    result {}
-    return compilation!!
+
+
+  class Builder internal constructor() {
+    internal var packageName: String = "com.prestongarno.ktq"
+    internal var schemaFile: File? = null
+    internal var schemaValue: String? = null
+
+    fun packageName(name: String) = apply { this.packageName = name }
+    fun schema(file: File) = apply { this.schemaFile = file }
+    fun schema(value: String) = apply { this.schemaValue = value }
+    fun compile(): QCompiler = QCompiler(this) {  }
+    fun compile(consumer: (QCompilationUnit) -> Unit): QCompiler = QCompiler(this, consumer)
   }
 }
 

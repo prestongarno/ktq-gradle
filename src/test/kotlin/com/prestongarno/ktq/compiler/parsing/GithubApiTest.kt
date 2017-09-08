@@ -20,7 +20,8 @@ class GithubApiTest {
 
     QCompiler.initialize()
         .packageName("com.prestongarno.ktq.github")
-        .compile(File(file.toURI())) { content ->
+        .schema(File(file.toURI()))
+        .compile() { content ->
           content.unions.forEach { union ->
             union.possibleTypes.forEach { t -> assert(t !is QUnknownType) }
           }
@@ -276,7 +277,7 @@ class GithubApiTest {
 
     websiteUrl: URI
 }"""
-    val content = QLParser().parse(user.byteInputStream())
+    val content = QLParser.parse(user.byteInputStream())
     assertTrue(content.types.size == 1)
     val userType = content.types[0]
     val interfaces = userType.interfaces

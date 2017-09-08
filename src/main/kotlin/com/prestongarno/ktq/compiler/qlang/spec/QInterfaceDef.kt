@@ -23,6 +23,7 @@ open class QInterfaceDef(name: String, fields: List<QField>) : QStatefulType(nam
 }
 
 fun determineTypeName(f: QFieldInputArg): TypeName {
+  println(f.type.name)
   return if (f.type is QScalarType)
     bestGuess(f.type.name)
   else
@@ -30,6 +31,7 @@ fun determineTypeName(f: QFieldInputArg): TypeName {
 }
 
 fun determineTypeName(f: QField): TypeName {
+  println("" + f + " " + f.type.name)
   return if (f.type is QScalarType)
     bestGuess(f.type.name)
   else
