@@ -16,6 +16,9 @@ class QField(name: String,
 
   init {
     super.description = comment
+    nullable = !isList
+        && type !is QScalarType
+        && nullable
   }
 
   enum class BuilderStatus {
@@ -231,9 +234,9 @@ private fun getStubTargetInvoke(field: QField): String =
       if (field.type is QScalarType || field.type is QEnumDef) {
         "QScalarList"
       } else com.prestongarno.ktq.QSchemaType.QTypeList::class.simpleName }) + "." +
-        if (field.args.isNotEmpty())
+        (if (field.args.isNotEmpty())
           "configStub"
-        else "stub"
+        else "stub")
 
 private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputClazzName: String) =
     FunSpec.builder(param.name)

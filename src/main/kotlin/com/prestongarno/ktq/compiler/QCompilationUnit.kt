@@ -65,7 +65,7 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
     LinkedList<QStatefulType>().apply { addAll(types); addAll(ifaces); addAll(inputs) }
   }
 
-  fun findType(key: String) = stateful.find { it.name == key }?: Scalar.getType(Scalar.match(key))
+  fun findType(key: String): QDefinedType? = stateful.find { it.name == key }?: Scalar.getType(Scalar.match(key))
 
   private fun resolveConflicts(): MutableList<TypeSpec> {
     return this.conflictOverrides.toList().mapNotNull { (symbol, pair: Pair<QTypeDef, List<QInterfaceDef>>) ->
