@@ -19,7 +19,7 @@ class InputToOuptut {
         |}
         |
         |type Condiment {
-        |  name: String
+        |  name: String!
         |}
         |
     """.trimMargin()).compile()
@@ -38,6 +38,9 @@ class InputToOuptut {
               """.trimMargin())
         }
   }
+
+
+
 }
 
 fun String.minusMetadata() = Regex("^.*import.*\n\n", MULTILINE).split(this).last()
