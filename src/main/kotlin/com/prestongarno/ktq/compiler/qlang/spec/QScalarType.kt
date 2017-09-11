@@ -75,6 +75,7 @@ enum class Scalar(val token: String) {
     private val floatType = QFloat()
     private val boolType = QBool()
     private val stringType = QString()
-    private val customType = QCustomScalarType("")
+    // TODO add type param for customizable types [ String, IOStream, and others? ]
+    private val customType = QCustomScalarType("String")
   }
 }

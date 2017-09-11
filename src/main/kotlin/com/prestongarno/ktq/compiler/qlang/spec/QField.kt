@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 class QField(name: String,
              var type: QDefinedType,
              var args: List<QFieldInputArg>,
-             var directive: QDirectiveSymbol,
+             var directive: QDirectiveSymbol = QDirectiveSymbol.default,
              var isList: Boolean = false,
              var nullable: Boolean = false,
              comment: String = "")
@@ -16,6 +16,9 @@ class QField(name: String,
 
   init {
     super.description = comment
+    nullable = !isList
+        && type !is QScalarType
+        && nullable
   }
 
   enum class BuilderStatus {
@@ -198,7 +201,6 @@ fun buildArgBuilder(field: QField, superclass: TypeName): TypeSpec.Builder {
   val argBuilderSpec = TypeSpec.classBuilder(argClassName.toString())
       .primaryConstructor(FunSpec.constructorBuilder()
           .addParameter(ParameterSpec.builder("args", rawType)
-              //.defaultValue("${rawType.simpleName}.create<${determineTypeName(field)}, $argClassName>()")
               .build())
           .build())
       .superclass(superclass)
@@ -231,12 +233,10 @@ private fun getStubTargetInvoke(field: QField): String =
     } else {
       if (field.type is QScalarType || field.type is QEnumDef) {
         "QScalarList"
-      } else com.prestongarno.ktq.QSchemaType.QTypeList::class.simpleName
-    }) +
-        "." +
-        if (field.args.isNotEmpty())
+      } else com.prestongarno.ktq.QSchemaType.QTypeList::class.simpleName }) + "." +
+        (if (field.args.isNotEmpty())
           "configStub"
-        else "stub"
+        else "stub")
 
 private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputClazzName: String) =
     FunSpec.builder(param.name)

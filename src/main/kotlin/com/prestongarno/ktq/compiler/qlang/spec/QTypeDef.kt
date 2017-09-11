@@ -18,7 +18,12 @@ class QTypeDef(name: String, var interfaces: List<QInterfaceDef>, fields: List<Q
     return result.build()
   }
 
-  override fun equals(other: Any?): Boolean = this === other
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    else if (other !is QStatefulType) return false
+    else return name == other.name
+        && fields.containsAll(other.fields)
+  }
   override fun hashCode(): Int {
     return interfaces.hashCode()
   }

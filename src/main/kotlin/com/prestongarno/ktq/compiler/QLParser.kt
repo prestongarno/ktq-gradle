@@ -17,14 +17,17 @@ import com.prestongarno.ktq.compiler.qlang.spec.RootType.*
 import java.io.File
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Created by preston on 7/20/17.
  */
 
-class QLParser {
+object QLParser {
 
   fun parse(file: File): QCompilationUnit = parse(file.inputStream())
+
+  fun parse(value: String): QCompilationUnit = parse(value.byteInputStream())
 
   fun parse(ioStream: InputStream): QCompilationUnit {
 
@@ -100,7 +103,7 @@ class QLParser {
       }
       scanner.useDelimiter("[a-zA-Z#]").next()
     }
-    return QCompilationUnit(all.only(), all.only(), all.only(), all.only(), all.only(), all.only())
+    return QCompilationUnit(all.toSet())
   }
 
   private fun lexFieldsToSymbols(fields: List<Field>): List<QField> =

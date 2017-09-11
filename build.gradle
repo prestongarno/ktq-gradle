@@ -30,20 +30,20 @@ apply plugin: 'maven-publish'
 apply plugin: "com.gradle.plugin-publish"
 apply plugin: "com.jfrog.artifactory"
 
-def getVersion = { Project project ->
+def evalIsRelease = { Project project ->
   if (project.hasProperty("release") &&
-          project.property("release") == "true")
-    return "0.2"
-  else return "0.2-SNAPSHOT"
+          project.property("release") == "true") return ""
+  else return "-SNAPSHOT"
 }
 
-version = getVersion(rootProject)
+version = "0.2${evalIsRelease(rootProject)}"
 group = 'com.prestongarno.ktq'
 
 
 repositories {
   mavenCentral()
   jcenter()
+  maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local/' }
 }
 
 def nonExported = ["org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version",
@@ -51,14 +51,15 @@ def nonExported = ["org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version",
 
 dependencies {
   compile gradleApi()
-  compile 'com.prestongarno.ktq:ktq-client:0.1'
-  compile "com.squareup:kotlinpoet:0.4.0"
+  implementation "com.prestongarno.ktq:ktq-client:0.2${evalIsRelease(rootProject)}"
+  implementation "com.squareup:kotlinpoet:0.4.0"
   compileClasspath nonExported
   testCompile gradleTestKit()
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile 'junit:junit:4.12'
   testCompile "org.jetbrains.kotlin:kotlin-test"
   testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+  testCompile "com.google.truth:truth:0.35"
   testRuntimeClasspath nonExported
 }
 

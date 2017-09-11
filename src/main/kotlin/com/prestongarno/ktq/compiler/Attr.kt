@@ -8,7 +8,6 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
-import kotlin.reflect.jvm.jvmName
 
 object Attr {
   fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
@@ -21,7 +20,7 @@ object Attr {
   }
 
   /**
-   * Complete list of QTypes passed to this method to find and attribute all QUnknownType
+   * Complete list of QTypes passed to this method to findType and attribute all QUnknownType
    * objects (the type each field is tagged with throughout the parsing process)
    */
   private fun verifyTypesToInterfaces(types: List<QTypeDef>, ifaces: List<QInterfaceDef>) {
@@ -48,7 +47,7 @@ object Attr {
   private fun attrUnionTypes(unions: List<QUnionTypeDef>, comp: QCompilationUnit): QCompilationUnit {
     unions.forEach { union ->
       union.possibleTypes = union.possibleTypes.map { t ->
-        comp.find(t.name)
+        comp.findType(t.name)
             ?: throw IllegalArgumentException("Unknown type '${t.name}' in union '$union'")
       }
     }
@@ -58,10 +57,10 @@ object Attr {
   private fun attrFieldTypes(types: List<QStatefulType>, comp: QCompilationUnit): QCompilationUnit {
     types.parallelStream().map { type ->
       type.fields.map { field ->
-        field.type = comp.find(field.type.name) ?: throw IllegalArgumentException(
+        field.type = comp.findType(field.type.name) ?: throw IllegalArgumentException(
             "Unknown type '${field.type.name}' on field '${field.name}' in type ${type.name}")
         field.args.forEach { arg ->
-          arg.type = comp.find(arg.type.name) ?: throw IllegalArgumentException(
+          arg.type = comp.findType(arg.type.name) ?: throw IllegalArgumentException(
               "Unknown type '${arg.type.name}' on field '${field.name}', argument '${arg.name}', in type ${type.name}")
         }
         attrPolymorphism(field, type)
