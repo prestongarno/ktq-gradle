@@ -228,7 +228,7 @@ artifactory {
   publish {
     repository {
       repoKey = 'oss-snapshot-local'   
-      username = BINTRAY_USER          
+      username = BINTRAY_USER
       password = JFROG_KEY
     }
     defaults {

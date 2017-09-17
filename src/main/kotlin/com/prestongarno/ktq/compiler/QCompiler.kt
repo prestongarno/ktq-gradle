@@ -1,18 +1,6 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.ArgBuilder
-import com.prestongarno.ktq.InitStub
-import com.prestongarno.ktq.ListConfig
-import com.prestongarno.ktq.ListConfigType
-import com.prestongarno.ktq.ListInitStub
-import com.prestongarno.ktq.ListStub
-import com.prestongarno.ktq.QConfigStub
-import com.prestongarno.ktq.QInput
-import com.prestongarno.ktq.QSchemaType
-import com.prestongarno.ktq.QTypeConfigStub
-import com.prestongarno.ktq.Stub
-import com.prestongarno.ktq.TypeArgBuilder
-import com.prestongarno.ktq.TypeListArgBuilder
+import com.prestongarno.ktq.*
 import com.squareup.kotlinpoet.*
 import java.io.File
 import java.io.InputStream
@@ -127,7 +115,10 @@ private fun getResolvedImports(): List<KClass<*>> {
       QTypeConfigStub::class,
       Stub::class,
       TypeArgBuilder::class,
-      TypeListArgBuilder::class
+      TypeListArgBuilder::class,
+      CustomScalar::class,
+      CustomScalarArgBuilder::class,
+      CustomScalarListArgBuilder::class
   )
 }
 
@@ -136,6 +127,8 @@ private fun getSchemaTypeHelpers(): List<KClass<*>> =
         QSchemaType.QScalar::class,
         QSchemaType.QScalarList::class,
         QSchemaType.QType::class,
-        QSchemaType.QTypeList::class
+        QSchemaType.QTypeList::class,
+        QSchemaType.QCustomScalar::class,
+        QSchemaType.QCustomScalarList::class
     )
 

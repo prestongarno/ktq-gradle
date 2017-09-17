@@ -2,19 +2,7 @@ package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.TypeArgBuilder
-import com.prestongarno.ktq.compiler.qlang.spec.QSchemaType
-import com.prestongarno.ktq.compiler.qlang.spec.QDefinedType
-import com.prestongarno.ktq.compiler.qlang.spec.QEnumDef
-import com.prestongarno.ktq.compiler.qlang.spec.QField
-import com.prestongarno.ktq.compiler.qlang.spec.QInputType
-import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
-import com.prestongarno.ktq.compiler.qlang.spec.QScalarType
-import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
-import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
-import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
-import com.prestongarno.ktq.compiler.qlang.spec.Scalar
-import com.prestongarno.ktq.compiler.qlang.spec.buildArgBuilder
-import com.prestongarno.ktq.compiler.qlang.spec.inputBuilderClassName
+import com.prestongarno.ktq.compiler.qlang.spec.*
 import com.squareup.kotlinpoet.*
 import java.util.*
 
@@ -46,6 +34,8 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
   fun getAllTypes(): List<TypeSpec> =
       resolveConflicts()
           .also { lizt ->
+            lizt.addAll(all.filterIsInstance<QCustomScalarType>()
+                .map { it.toKotlin() })
             lizt.addAll(all.filterIsInstance<QStatefulType>().map {
               if (it.description.isNotEmpty())
                 it.toKotlin()
@@ -62,7 +52,7 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
       conflictOverrides.put(conflict.first, conflict.second)
 
   val stateful: List<QStatefulType> by lazy {
-    LinkedList<QStatefulType>().apply { addAll(types); addAll(ifaces); addAll(inputs) }
+    LinkedList<QStatefulType>().apply { addAll(types); addAll(ifaces); addAll(inputs); addAll(scalar) }
   }
 
   fun findType(key: String): QDefinedType? = stateful.find { it.name == key }?: Scalar.getType(Scalar.match(key))

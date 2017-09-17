@@ -1,10 +1,12 @@
 package com.prestongarno.ktq.compiler.qlang.spec
 
+import com.prestongarno.ktq.CustomScalar
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeSpec
 import java.util.*
 import java.util.stream.Collectors
 
-sealed class QScalarType(name: String) : QDefinedType(name) {
+sealed class QScalarType(name: String) : QStatefulType(name, emptyList()) {
 
   override fun toKotlin(): TypeSpec {
     throw IllegalStateException("no") }
@@ -12,22 +14,22 @@ sealed class QScalarType(name: String) : QDefinedType(name) {
   override fun equals(other: Any?): Boolean {
     return other is QScalarType && name == other.name
   }
-
   override fun hashCode(): Int = javaClass.hashCode()
 }
 
 class QCustomScalarType(name: String) : QScalarType(name) {
-  override fun toKotlin(): TypeSpec {
-    if (this.kotlinSpec == null) this.kotlinSpec = QTypeDef(name,
-        emptyList(),
-        listOf(QField("value",
-                      Scalar.getType(Scalar.STRING),
-                      emptyList(),
-                      QDirectiveSymbol.default,
-                      false,
-                      false))).toKotlin()
 
+  override fun toKotlin(): TypeSpec {
+    if (this.kotlinSpec == null)
+      this.kotlinSpec = TypeSpec.objectBuilder(name)
+          .addSuperinterface(ClassName.bestGuess("${CustomScalar::class.simpleName}"))
+          .build()
     return this.kotlinSpec!!
+  }
+
+  companion object {
+    val CUSTOM_SCALAR_SUPERIFACE =
+        QInterfaceDef(com.prestongarno.ktq.CustomScalar::class.simpleName!!, emptyList())
   }
 }
 
@@ -70,12 +72,14 @@ enum class Scalar(val token: String) {
       UNKNOWN -> customType
     }
 
+    fun getOrCreate(name: String) : QScalarType =
+        getType(match(name)).takeIf { it != customType }?: QCustomScalarType(name)
+
     private val idType = QId()
     private val intType = QInt()
     private val floatType = QFloat()
     private val boolType = QBool()
     private val stringType = QString()
-    // TODO add type param for customizable types [ String, IOStream, and others? ]
     private val customType = QCustomScalarType("String")
   }
 }
