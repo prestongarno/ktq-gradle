@@ -1,6 +1,7 @@
 package com.prestongarno.ktq.compiler.qlang.spec
 
 import com.prestongarno.ktq.*
+import com.prestongarno.ktq.QSchemaType.*
 import com.squareup.kotlinpoet.*
 import java.util.*
 import kotlin.reflect.KClass
@@ -47,17 +48,22 @@ class QField(name: String,
     val typeName = determineTypeName(this)
     val rawTypeName =
         if (this.args.isEmpty()) {
-          val stubType : KClass<*> =
+          val stubType: KClass<*> =
               if (!isList) {
-                if (this.type is QScalarType || this.type is QEnumDef)
+                if (type is QCustomScalarType)
+                  CustomScalarInitStub::class
+                else if (this.type is QScalarType || this.type is QEnumDef)
                   Stub::class
                 else
                   InitStub::class
               } else {
-                if (this.type is QScalarType || this.type is QEnumDef)
+                if (type is QCustomScalarType)
+                  CustomScalarListInitStub::class
+                else if (this.type is QScalarType || this.type is QEnumDef)
                   ListStub::class
                 else {
-                  ListInitStub::class }
+                  ListInitStub::class
+                }
               }
 
           ParameterizedTypeName.get(ClassName.bestGuess("${stubType.simpleName}"), typeName)
@@ -65,12 +71,16 @@ class QField(name: String,
         } else {
           val configName =
               if (!isList) {
-                if (this.type is QScalarType || this.type is QEnumDef)
+                if (type is QCustomScalarType)
+                  CustomScalarConfigStub::class.simpleName
+                else if (this.type is QScalarType || this.type is QEnumDef)
                   QConfigStub::class.simpleName
                 else
                   QTypeConfigStub::class.simpleName
               } else {
-                if (this.type is QScalarType || this.type is QEnumDef)
+                if (type is QCustomScalarType)
+                  CustomScalarListConfigStub::class.simpleName
+                else if (this.type is QScalarType || this.type is QEnumDef)
                   ListConfig::class.simpleName
                 else ListConfigType::class.simpleName
               }
@@ -108,7 +118,7 @@ class QField(name: String,
         }
 
     val spec = PropertySpec.builder(this.name, rawTypeName)
-    if(description.isNotEmpty())
+    if (description.isNotEmpty())
       spec.addKdoc(CodeBlock.of(description, "%W"))
     if (!abstract) {
       spec.delegate(
@@ -159,8 +169,8 @@ class QField(name: String,
     if (other !is QField) return false
 
     return isList == other.isList
-      && nullable == other.nullable
-      && type == other.type
+        && nullable == other.nullable
+        && type == other.type
   }
 
   override fun hashCode(): Int {
@@ -179,7 +189,6 @@ fun buildArgBuilder(field: QField, superInterface: KClass<*>, name: TypeName): T
   val result = TypeSpec.classBuilder(name.toString())
       .primaryConstructor(FunSpec.constructorBuilder()
           .addParameter(ParameterSpec.builder("args", superInterface)
-              //.defaultValue("${superInterface.simpleName}.create<${determineTypeName(field)}, $name>()")
               .build())
           .build())
       .addSuperinterface(ClassName.bestGuess(superInterface.simpleName?.replace("$".toRegex(), "_by_args")!!))
@@ -214,12 +223,16 @@ fun buildArgBuilder(field: QField, superclass: TypeName): TypeSpec.Builder {
 
 private fun determineArgBuilderType(field: QField): KClass<*> =
     if (!field.isList) {
-      if (field.type is QScalarType)
+      if (field.type is QCustomScalarType)
+        CustomScalarArgBuilder::class
+      else if (field.type is QScalarType)
         ArgBuilder::class
       else
         TypeArgBuilder::class
     } else {
-      if (field.type is QScalarType)
+      if (field.type is QCustomScalarType)
+        CustomScalarListArgBuilder::class
+      else if (field.type is QScalarType)
         ListArgBuilder::class
       else
         TypeListArgBuilder::class
@@ -227,16 +240,24 @@ private fun determineArgBuilderType(field: QField): KClass<*> =
 
 private fun getStubTargetInvoke(field: QField): String =
     (if (!field.isList) {
-      if (field.type is QScalarType || field.type is QEnumDef) {
-        "QScalar"
-      } else "QType"
+      if (field.type is QCustomScalarType)
+        "${QCustomScalar::class.simpleName}"
+      else if (field.type is QScalarType || field.type is QEnumDef) {
+        "${QScalar::class.simpleName}"
+      } else
+        "${QType::class.simpleName}"
     } else {
-      if (field.type is QScalarType || field.type is QEnumDef) {
-        "QScalarList"
-      } else com.prestongarno.ktq.QSchemaType.QTypeList::class.simpleName }) + "." +
+      if (field.type is QCustomScalarType)
+        "${QCustomScalarList::class.simpleName}"
+      else if (field.type is QScalarType || field.type is QEnumDef) {
+        "${QScalarList::class.simpleName}"
+      } else
+        QTypeList::class.simpleName
+    }) + "." +
         (if (field.args.isNotEmpty())
           "configStub"
-        else "stub")
+        else
+          "stub")
 
 private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputClazzName: String) =
     FunSpec.builder(param.name)

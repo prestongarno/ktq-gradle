@@ -117,8 +117,13 @@ private fun getResolvedImports(): List<KClass<*>> {
       TypeArgBuilder::class,
       TypeListArgBuilder::class,
       CustomScalar::class,
+      CustomScalarInitStub::class,
+      CustomScalarListInitStub::class,
+      CustomScalarListStub::class,
       CustomScalarArgBuilder::class,
-      CustomScalarListArgBuilder::class
+      CustomScalarListArgBuilder::class,
+      CustomScalarConfigStub::class,
+      CustomScalarListConfigStub::class
   )
 }
 

@@ -31,7 +31,7 @@ object QLParser {
 
   fun parse(ioStream: InputStream): QCompilationUnit {
 
-    val all = LinkedList<QSchemaType<*>>()
+    val all = mutableListOf<QSchemaType<*>>()
 
     val scanner = Scanner(ioStream)
 
@@ -69,8 +69,6 @@ object QLParser {
               .map { str -> QUnknownType(str) }))
         }
 
-        ENUM -> all.add(0, QEnumDef(name, QLexer.enumFields(scanner.useDelimiter("}").next())))
-
         TYPE -> {
           val ifaces = scanner.useDelimiter("\\{")
               .next()
@@ -96,6 +94,10 @@ object QLParser {
 
         SCALAR -> all.add(0, QCustomScalarType(name))
         INPUT -> all.add(0, QInputType(name, lexFieldsToSymbols(QLexer.baseFields(scanner.getClosure()))))
+        ENUM -> {
+          val element = QEnumDef(name, QLexer.enumFields(scanner.useDelimiter("}").next()))
+          all.add(0, element)
+        }
       }
       if (comments.trim().isNotEmpty()) {
         all[0].description = comments
@@ -103,7 +105,8 @@ object QLParser {
       }
       scanner.useDelimiter("[a-zA-Z#]").next()
     }
-    return QCompilationUnit(all.toSet())
+
+    return QCompilationUnit(all)
   }
 
   private fun lexFieldsToSymbols(fields: List<Field>): List<QField> =

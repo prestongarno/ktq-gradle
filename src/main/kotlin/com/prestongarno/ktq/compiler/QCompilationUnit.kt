@@ -1,8 +1,8 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.ArgBuilder
-import com.prestongarno.ktq.TypeArgBuilder
+import com.prestongarno.ktq.*
 import com.prestongarno.ktq.compiler.qlang.spec.*
+import com.prestongarno.ktq.compiler.qlang.spec.QSchemaType
 import com.squareup.kotlinpoet.*
 import java.util.*
 
@@ -11,31 +11,21 @@ import java.util.*
  * list of Strings for which each entry represents a declaration within a type declaration (primitive model, field
  * type, or field list of types
  */
-class QCompilationUnit(val all: Set<QSchemaType<*>>) {
+class QCompilationUnit(val all: Collection<QSchemaType<*>>) {
 
-  val types: List<QTypeDef> = filter(all)
-  val ifaces: List<QInterfaceDef> = filter(all)
-  val inputs: List<QInputType> = filter(all)
-  val scalar: List<QScalarType> = filter(all)
-  val enums: List<QEnumDef> = filter(all)
-  val unions: List<QUnionTypeDef> = filter(all)
+  val enums: List<QEnumDef> = all.filter { it is QEnumDef }.map { it as QEnumDef }
+  val types: List<QTypeDef> = filterIs(all)
+  val ifaces: List<QInterfaceDef> = filterIs(all)
+  val inputs: List<QInputType> = filterIs(all)
+  val scalar: List<QScalarType> = filterIs(all)
+  val unions: List<QUnionTypeDef> = filterIs(all)
 
-  init {
-    all.sortedBy { it.name }
-  }
-
-  private inline fun <reified T> filter(from: Set<Any>): List<T> = from.filterIsInstance<T>()
-
-  private fun <T : QDefinedType> addAllStuff(vararg foo: List<T>): List<QDefinedType> =
-      foo.toSet().flatten().sortedBy { it.name }
-        //Collections.sort(this, { o1, o2 -> o1.name.compareTo(o2.name) }) }
+  private inline fun <reified T> filterIs(from: Collection<Any>): List<T> = from.filterIsInstance<T>()
 
 
   fun getAllTypes(): List<TypeSpec> =
       resolveConflicts()
           .also { lizt ->
-            lizt.addAll(all.filterIsInstance<QCustomScalarType>()
-                .map { it.toKotlin() })
             lizt.addAll(all.filterIsInstance<QStatefulType>().map {
               if (it.description.isNotEmpty())
                 it.toKotlin()
@@ -43,7 +33,8 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
                     .addKdoc(CodeBlock.of(it.description, "%W"))
                     .build()
               else it.toKotlin()
-            }.toList())
+            }.toList()
+                .sortedBy { it.name })
           }
 
   private val conflictOverrides = mutableMapOf<QField, Pair<QTypeDef, List<QInterfaceDef>>>()
@@ -51,11 +42,11 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
   fun addConflict(conflict: Pair<QField, Pair<QTypeDef, List<QInterfaceDef>>>) =
       conflictOverrides.put(conflict.first, conflict.second)
 
-  val stateful: List<QStatefulType> by lazy {
-    LinkedList<QStatefulType>().apply { addAll(types); addAll(ifaces); addAll(inputs); addAll(scalar) }
+  val stateful: Map<String, QStatefulType> by lazy {
+    (scalar + enums + types + ifaces + unions + inputs).map { Pair(it.name, it) }.toMap()
   }
 
-  fun findType(key: String): QDefinedType? = stateful.find { it.name == key }?: Scalar.getType(Scalar.match(key))
+  fun findType(key: String): QDefinedType? = stateful[key] ?: Scalar.getType(Scalar.match(key))
 
   private fun resolveConflicts(): MutableList<TypeSpec> {
     return this.conflictOverrides.toList().mapNotNull { (symbol, pair: Pair<QTypeDef, List<QInterfaceDef>>) ->
@@ -74,15 +65,27 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
         val dummy = QField(
             symbol.name,
             symbol.type,
-            emptyList(), // TODO filter all base arguments and declare in superclass for muh polymorphism
+            emptyList(),
             symbol.directive,
             symbol.isList,
             symbol.nullable).also { it.flag(QField.BuilderStatus.TOP_LEVEL); it.abstract(true) }
         buildArgBuilder(dummy,
-                        if (dummy.type is QScalarType || dummy.type is QEnumDef)
-                          ArgBuilder::class
-                        else TypeArgBuilder::class,
-                        superclazzType)
+            if (!dummy.isList) {
+              if (dummy.type is QCustomScalarType)
+                CustomScalarArgBuilder::class
+              else if (dummy.type is QScalarType || dummy.type is QEnumDef)
+                ArgBuilder::class
+              else
+                TypeArgBuilder::class
+            } else {
+              if (dummy.type is QCustomScalarType)
+                CustomScalarListArgBuilder::class
+              else if (dummy.type is QScalarType || dummy.type is QEnumDef)
+                ListArgBuilder::class
+              else
+                TypeListArgBuilder::class
+            },
+            superclazzType)
             .addModifiers(KModifier.ABSTRACT)
             .build()
       } else null
@@ -103,8 +106,8 @@ class QCompilationUnit(val all: Set<QSchemaType<*>>) {
 
       if (first.type != comparingTo.type)
         return Optional.of(IllegalStateException("Conflicting overriding property declarations on [ ${declaring.name}.${symbol.name} ] " +
-                                                     "from interfaces ${curr.name} ( ${symbol.name} declares type ${first.type.name} )" +
-                                                     " and ${next.name} (declares type ${comparingTo.type.name} )"))
+            "from interfaces ${curr.name} ( ${symbol.name} declares type ${first.type.name} )" +
+            " and ${next.name} (declares type ${comparingTo.type.name} )"))
 
       next
     })

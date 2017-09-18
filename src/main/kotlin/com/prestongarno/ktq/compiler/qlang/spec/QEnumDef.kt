@@ -3,7 +3,7 @@ package com.prestongarno.ktq.compiler.qlang.spec
 import com.prestongarno.ktq.QSchemaType
 import com.squareup.kotlinpoet.TypeSpec
 
-class QEnumDef(name: String, var options: List<String>) : QDefinedType(name) {
+class QEnumDef(name: String, var options: List<String>) : QStatefulType(name, emptyList()) {
 
   override fun toKotlin(): TypeSpec {
     if(this.kotlinSpec == null) {

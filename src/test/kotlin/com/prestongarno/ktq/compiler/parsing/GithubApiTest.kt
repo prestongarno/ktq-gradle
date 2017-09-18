@@ -1,7 +1,10 @@
 package com.prestongarno.ktq.compiler.parsing
 
+import com.prestongarno.ktq.JvmCompile
+import com.prestongarno.ktq.compiler.BaseTest
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.QLParser
+import com.prestongarno.ktq.compiler.minusMetadata
 import com.prestongarno.ktq.compiler.qlang.spec.QField
 import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
@@ -13,7 +16,7 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GithubApiTest {
+class GithubApiTest : BaseTest() {
   @Test
   fun schemaTest() {
     val file = this::class.java.classLoader.getResource("graphql.schema.graphqls")
@@ -34,14 +37,14 @@ class GithubApiTest {
             }
           }
 
-          content.stateful.forEach { f ->
+          content.stateful.values.forEach { f ->
             f.fields.forEach { fooU: QField ->
               assert(fooU.type !is QUnknownType)
               fooU.args.forEach { foo -> assert(!(foo.type is QUnknownType)) }
             }
           }
 
-          content.stateful.stream()
+          content.stateful.values.stream()
               .map { t ->
                 t.fields.map {
                   Pair(t, it)
@@ -55,7 +58,10 @@ class GithubApiTest {
               }
         }.result {
       require(it.isNotEmpty())
-    }
+      require(!it.contains("<UNKNOWN>"))
+    }.writeToFile(codegenOutputFile)
+
+    assertTrue(JvmCompile.exe(codegenOutputFile, compileOutputDir))
   }
 
   @Test

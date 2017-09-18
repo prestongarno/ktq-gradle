@@ -26,11 +26,6 @@ class QCustomScalarType(name: String) : QScalarType(name) {
           .build()
     return this.kotlinSpec!!
   }
-
-  companion object {
-    val CUSTOM_SCALAR_SUPERIFACE =
-        QInterfaceDef(com.prestongarno.ktq.CustomScalar::class.simpleName!!, emptyList())
-  }
 }
 
 class QInt(val defValue: Int = 0) : QScalarType("Int")
@@ -41,7 +36,6 @@ class QBool(val defValue: Boolean = false) : QScalarType("Boolean")
 
 class QString(val defValue: String = "") : QScalarType("String")
 
-class QId : QScalarType("ID")
 /**
  * Enum class representing primitive types
  */
@@ -50,16 +44,14 @@ enum class Scalar(val token: String) {
   FLOAT("Float"),
   BOOL("Boolean"),
   STRING("String"),
-  ID("ID"),
   UNKNOWN("");
 
   companion object matcher {
-    private val values: Map<String, Scalar>
-
-    init {
-      values = Arrays.stream(enumValues<Scalar>())
-          .collect(Collectors.toMap({ t -> t.token }, { t -> t }))
-    }
+    private val values: Map<String, Scalar> = mapOf(
+        Pair("Int", INT),
+        Pair("Float", FLOAT),
+        Pair("Boolean", BOOL),
+        Pair("String", STRING))
 
     fun match(keyword: String): Scalar = values[keyword] ?: UNKNOWN
 
@@ -68,18 +60,13 @@ enum class Scalar(val token: String) {
       FLOAT -> floatType
       BOOL -> boolType
       STRING -> stringType
-      ID -> idType
       UNKNOWN -> customType
     }
 
-    fun getOrCreate(name: String) : QScalarType =
-        getType(match(name)).takeIf { it != customType }?: QCustomScalarType(name)
-
-    private val idType = QId()
     private val intType = QInt()
     private val floatType = QFloat()
     private val boolType = QBool()
     private val stringType = QString()
-    private val customType = QCustomScalarType("String")
+    private val customType = QCustomScalarType("<UNKNOWN>")
   }
 }
