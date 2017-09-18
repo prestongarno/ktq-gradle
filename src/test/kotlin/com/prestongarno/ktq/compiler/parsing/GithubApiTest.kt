@@ -313,7 +313,7 @@ class GithubApiTest : BaseTest() {
                                  listOf("", "", "", "", "", "", "", "")))
       6 -> assertTrue(checkField(f, "createdAt", "DateTime", false, false))
       7 -> assertTrue(checkField(f, "databaseId", "Int", false, true, 0,
-                                 empty(), empty(), empty(), empty(), empty(),
+                                 emptyList(), emptyList(), emptyList(), emptyList(), emptyList(),
                                  Pair("deprecated", "reason: \"Exposed database IDs will eventually be removed in favor of global Relay IDs.\"")))
       8 -> assertTrue(checkField(f, "email", "String", false, false))
       9 -> assertTrue(checkField(f, "followers", "FollowerConnection", false, false, 4,
@@ -364,7 +364,7 @@ class GithubApiTest : BaseTest() {
                                   listOf("Int", "String", "Int", "String", "Boolean", "StarOrder"),
                                   listOf(F, F, F, F, F, F), listOf(T, T, T, T, T, T), listOf("", "", "", "", "", "")))
       34 -> assertTrue(checkField(f, "updatedAt", "DateTime", false, false, 0,
-                                  empty(), empty(), empty(), empty(), empty(),
+                                  emptyList(), emptyList(), emptyList(), emptyList(), emptyList(),
                                   Pair("deprecated", "reason: \"General type updated timestamps will eventually be replaced by other field specific timestamps.\"")))
       35 -> assertTrue(checkField(f, "url", "URI", false, false))
       36 -> assertTrue(checkField(f, "viewerCanFollow", "Boolean", false, false))
@@ -386,11 +386,11 @@ class GithubApiTest : BaseTest() {
                    expectIsList: Boolean,
                    expectIsNullable: Boolean,
                    expectArgCount: Int = 0,
-                   expectArgNames: List<String> = empty(),
-                   expectArgTypes: List<String> = empty(),
-                   expectArgIsList: List<Boolean> = empty(),
-                   expectArgNullable: List<Boolean> = empty(),
-                   expectArgDefValue: List<String> = empty(),
+                   expectArgNames: List<String> = emptyList(),
+                   expectArgTypes: List<String> = emptyList(),
+                   expectArgIsList: List<Boolean> = emptyList(),
+                   expectArgNullable: List<Boolean> = emptyList(),
+                   expectArgDefValue: List<String> = emptyList(),
                    expectDirective: Pair<String, String>? = null): Boolean {
       assertEquals(field.name, expectName, "Expected name '$expectName' but was '${field.name}'")
       assertEquals(field.type.name, expectType, "Expected '$expectName' type '$expectType' but was '${field.type.name}'")
@@ -411,8 +411,6 @@ class GithubApiTest : BaseTest() {
       }
       return true
     }
-
-    inline fun <reified T : Any> empty() = Collections.emptyList<T>()
   }
 }
 
