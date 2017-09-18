@@ -1,7 +1,5 @@
 package com.prestongarno.ktq.compiler
 
-import java.util.*
-
 object QLexer {
 
   var NAME = Regex("([a-zA-Z0-9_]+)(\\((.*?)\\))?\\s*:")
@@ -44,7 +42,7 @@ object QLexer {
                 .split(INPUT_SPLIT)
                 .filter { s -> s.isNotBlank() }
                 .map { str -> inputField(str.trim()) }
-          } else Collections.emptyList()
+          } else emptyList()
           val directive = if (group[7] == null) Pair("", "") else Pair(group[8]!!.value, group[9]!!.value)
           val isList = LIST.matches(group[4]!!.value)
           val nullable = !NON_NULL.containsMatchIn(group[5]!!.value)

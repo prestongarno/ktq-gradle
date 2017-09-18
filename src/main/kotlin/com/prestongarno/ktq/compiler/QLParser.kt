@@ -13,11 +13,9 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
 import com.prestongarno.ktq.compiler.qlang.spec.RootType
-import com.prestongarno.ktq.compiler.qlang.spec.RootType.*
 import java.io.File
+import java.util.Scanner
 import java.io.InputStream
-import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Created by preston on 7/20/17.
@@ -31,7 +29,7 @@ object QLParser {
 
   fun parse(ioStream: InputStream): QCompilationUnit {
 
-    val all = LinkedList<QSchemaType<*>>()
+    val all = mutableListOf<QSchemaType<*>>()
 
     val scanner = Scanner(ioStream)
 
@@ -58,20 +56,18 @@ object QLParser {
       val name = scanner.next().trim()
 
       when (typeKind) {
-        UNKNOWN -> {
+        RootType.UNKNOWN -> {
           throw IllegalArgumentException("Unknown type declaration \"$declType\"")
         }
 
-        UNION -> {
+        RootType.UNION -> {
           scanner.useDelimiter("[a-zA-Z0-9_]".toRegex().pattern).next()
           val block = scanner.nextLine()
           all.add(0, QUnionTypeDef(name, QLexer.unionFields(block)
               .map { str -> QUnknownType(str) }))
         }
 
-        ENUM -> all.add(0, QEnumDef(name, QLexer.enumFields(scanner.useDelimiter("}").next())))
-
-        TYPE -> {
+        RootType.TYPE -> {
           val ifaces = scanner.useDelimiter("\\{")
               .next()
               .split("[\\s,]".toRegex())
@@ -88,14 +84,18 @@ object QLParser {
               , fields))
         }
 
-        INTERFACE -> all.add(0, QInterfaceDef(name,
+        RootType.INTERFACE -> all.add(0, QInterfaceDef(name,
             lexFieldsToSymbols(QLexer.baseFields(scanner.getClosure()))
                 .also {
                   it.forEach { it.abstract(true) }
                 }))
 
-        SCALAR -> all.add(0, QCustomScalarType(name))
-        INPUT -> all.add(0, QInputType(name, lexFieldsToSymbols(QLexer.baseFields(scanner.getClosure()))))
+        RootType.SCALAR -> all.add(0, QCustomScalarType(name))
+        RootType.INPUT -> all.add(0, QInputType(name, lexFieldsToSymbols(QLexer.baseFields(scanner.getClosure()))))
+        RootType.ENUM -> {
+          val element = QEnumDef(name, QLexer.enumFields(scanner.useDelimiter("}").next()))
+          all.add(0, element)
+        }
       }
       if (comments.trim().isNotEmpty()) {
         all[0].description = comments
@@ -103,7 +103,8 @@ object QLParser {
       }
       scanner.useDelimiter("[a-zA-Z#]").next()
     }
-    return QCompilationUnit(all.toSet())
+
+    return QCompilationUnit(all)
   }
 
   private fun lexFieldsToSymbols(fields: List<Field>): List<QField> =
@@ -124,7 +125,5 @@ object QLParser {
 }
 
 private fun Scanner.getClosure() = useDelimiter("}").next().trim().substring(1)
-
-private inline fun <reified T : QSchemaType<*>> List<QSchemaType<*>>.only(): List<T> = filterIsInstance(T::class.java)
 
 private fun String.append(to: String) = this + to

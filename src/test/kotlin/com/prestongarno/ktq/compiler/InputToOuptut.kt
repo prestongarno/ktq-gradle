@@ -1,9 +1,7 @@
 package com.prestongarno.ktq.compiler
 
 import org.junit.Test
-import com.google.common.truth.StringSubject
-import com.google.common.truth.Truth
-import com.google.common.truth.Truth.*
+import com.google.common.truth.Truth.assertThat
 import kotlin.text.RegexOption.MULTILINE
 
 class InputToOuptut {
@@ -38,9 +36,6 @@ class InputToOuptut {
               """.trimMargin())
         }
   }
-
-
-
 }
 
 fun String.minusMetadata() = Regex("^.*import.*\n\n", MULTILINE).split(this).last()

@@ -3,7 +3,6 @@ package com.prestongarno.ktq.compiler.parsing
 import com.prestongarno.ktq.compiler.QLexer
 import com.prestongarno.ktq.compiler.qlang.spec.QFieldInputArg
 import org.junit.Test
-import java.util.*
 
 class MemberDeclarationParseTests {
 
@@ -36,7 +35,7 @@ class MemberDeclarationParseTests {
 		QLexer.baseFields(rawField).forEach { field ->
 			assert(field.symbol == "foofield"
 					&& field.type == "String"
-					&& field.inputArgs == Collections.emptyList<QFieldInputArg>()
+					&& field.inputArgs == emptyList<QFieldInputArg>()
 					&& !field.isList
 					&& field.isNullable)
 		}
@@ -51,7 +50,7 @@ class MemberDeclarationParseTests {
 		QLexer.baseFields(rawField).forEach { field ->
 			assert(field.symbol == "foofield"
 					&& field.type == "Object"
-					&& field.inputArgs == Collections.emptyList<QFieldInputArg>()
+					&& field.inputArgs == emptyList<QFieldInputArg>()
 					&& field.isList
 					&& field.isNullable)
 		}
@@ -66,7 +65,7 @@ class MemberDeclarationParseTests {
 		QLexer.baseFields(rawField).forEach { field ->
 			assert(field.symbol == "foofield"
 					&& field.type == "Object"
-					&& field.inputArgs == Collections.emptyList<QFieldInputArg>()
+					&& field.inputArgs == emptyList<QFieldInputArg>()
 					&& field.isList
 					&& !field.isNullable)
 		}
@@ -81,7 +80,7 @@ class MemberDeclarationParseTests {
 		QLexer.baseFields(rawField).forEach { field ->
 			assert(field.symbol == "foofield"
 					&& field.type == "Object"
-					&& field.inputArgs == Collections.emptyList<QFieldInputArg>()
+					&& field.inputArgs == emptyList<QFieldInputArg>()
 					&& field.isList
 					&& field.isNullable
 					&& field.directive.first == "directive"

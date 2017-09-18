@@ -2,8 +2,8 @@ package com.prestongarno.ktq.compiler.qlang.spec
 
 import com.squareup.kotlinpoet.TypeSpec
 import com.prestongarno.ktq.QSchemaType
-import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ClassName.Companion.bestGuess
+import com.squareup.kotlinpoet.TypeName
 
 open class QInterfaceDef(name: String, fields: List<QField>) : QStatefulType(name, fields) {
 

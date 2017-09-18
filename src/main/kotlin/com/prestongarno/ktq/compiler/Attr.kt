@@ -5,8 +5,8 @@ import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
 import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
-import java.util.*
-import kotlin.collections.HashMap
+import java.util.LinkedList
+import java.util.Optional
 import kotlin.collections.HashSet
 
 object Attr {
@@ -24,8 +24,7 @@ object Attr {
    * objects (the type each field is tagged with throughout the parsing process)
    */
   private fun verifyTypesToInterfaces(types: List<QTypeDef>, ifaces: List<QInterfaceDef>) {
-    val globalIface = HashMap<String, QInterfaceDef>(ifaces.size + 1, 0.99f)
-    ifaces.forEach { iface -> globalIface.put(iface.name, iface) }
+    val globalIface = ifaces.map { Pair(it.name, it) }.toMap()
 
     types.forEach { t ->
       val attrInterfaces: LinkedList<QInterfaceDef> = LinkedList()
@@ -116,7 +115,7 @@ object Attr {
       if (KEYWORDS.contains(it.name))
         it.name = "${it.name}Def"
     }
-    comp.stateful.map {
+    comp.stateful.values.map {
       it.fields.map { f ->
         if (KEYWORDS.contains(f.name))
           f.name = "${f.name}Val"

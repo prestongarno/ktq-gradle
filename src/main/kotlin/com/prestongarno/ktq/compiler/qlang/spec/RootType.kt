@@ -1,6 +1,6 @@
 package com.prestongarno.ktq.compiler.qlang.spec
 
-import java.util.*
+import java.util.EnumSet
 import java.util.stream.Collectors
 
 enum class RootType(val token: String) {

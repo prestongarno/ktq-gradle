@@ -1,6 +1,14 @@
 package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
+import com.prestongarno.ktq.CustomScalar
+import com.prestongarno.ktq.CustomScalarArgBuilder
+import com.prestongarno.ktq.CustomScalarConfigStub
+import com.prestongarno.ktq.CustomScalarInitStub
+import com.prestongarno.ktq.CustomScalarListArgBuilder
+import com.prestongarno.ktq.CustomScalarListConfigStub
+import com.prestongarno.ktq.CustomScalarListInitStub
+import com.prestongarno.ktq.CustomScalarListStub
 import com.prestongarno.ktq.InitStub
 import com.prestongarno.ktq.ListConfig
 import com.prestongarno.ktq.ListConfigType
@@ -13,10 +21,8 @@ import com.prestongarno.ktq.QTypeConfigStub
 import com.prestongarno.ktq.Stub
 import com.prestongarno.ktq.TypeArgBuilder
 import com.prestongarno.ktq.TypeListArgBuilder
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KotlinFile
 import java.io.File
-import java.io.InputStream
-import java.io.Reader
 import kotlin.reflect.KClass
 
 class QCompiler internal constructor(builder: Builder) {
@@ -127,7 +133,15 @@ private fun getResolvedImports(): List<KClass<*>> {
       QTypeConfigStub::class,
       Stub::class,
       TypeArgBuilder::class,
-      TypeListArgBuilder::class
+      TypeListArgBuilder::class,
+      CustomScalar::class,
+      CustomScalarInitStub::class,
+      CustomScalarListInitStub::class,
+      CustomScalarListStub::class,
+      CustomScalarArgBuilder::class,
+      CustomScalarListArgBuilder::class,
+      CustomScalarConfigStub::class,
+      CustomScalarListConfigStub::class
   )
 }
 
@@ -136,6 +150,8 @@ private fun getSchemaTypeHelpers(): List<KClass<*>> =
         QSchemaType.QScalar::class,
         QSchemaType.QScalarList::class,
         QSchemaType.QType::class,
-        QSchemaType.QTypeList::class
+        QSchemaType.QTypeList::class,
+        QSchemaType.QCustomScalar::class,
+        QSchemaType.QCustomScalarList::class
     )
 

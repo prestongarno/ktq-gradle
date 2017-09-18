@@ -1,5 +1,7 @@
 package com.prestongarno.ktq.compiler.parsing
 
+import com.prestongarno.ktq.JvmCompile
+import com.prestongarno.ktq.compiler.BaseTest
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.QLParser
 import com.prestongarno.ktq.compiler.qlang.spec.QField
@@ -9,11 +11,10 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
 import org.junit.Test
 import java.io.File
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GithubApiTest {
+class GithubApiTest : BaseTest() {
   @Test
   fun schemaTest() {
     val file = this::class.java.classLoader.getResource("graphql.schema.graphqls")
@@ -34,14 +35,14 @@ class GithubApiTest {
             }
           }
 
-          content.stateful.forEach { f ->
+          content.stateful.values.forEach { f ->
             f.fields.forEach { fooU: QField ->
               assert(fooU.type !is QUnknownType)
               fooU.args.forEach { foo -> assert(!(foo.type is QUnknownType)) }
             }
           }
 
-          content.stateful.stream()
+          content.stateful.values.stream()
               .map { t ->
                 t.fields.map {
                   Pair(t, it)
@@ -55,7 +56,10 @@ class GithubApiTest {
               }
         }.result {
       require(it.isNotEmpty())
-    }
+      require(!it.contains("<UNKNOWN>"))
+    }.writeToFile(codegenOutputFile)
+
+    assertTrue(JvmCompile.exe(codegenOutputFile, compileOutputDir))
   }
 
   @Test
@@ -309,7 +313,7 @@ class GithubApiTest {
                                  listOf("", "", "", "", "", "", "", "")))
       6 -> assertTrue(checkField(f, "createdAt", "DateTime", false, false))
       7 -> assertTrue(checkField(f, "databaseId", "Int", false, true, 0,
-                                 empty(), empty(), empty(), empty(), empty(),
+                                 emptyList(), emptyList(), emptyList(), emptyList(), emptyList(),
                                  Pair("deprecated", "reason: \"Exposed database IDs will eventually be removed in favor of global Relay IDs.\"")))
       8 -> assertTrue(checkField(f, "email", "String", false, false))
       9 -> assertTrue(checkField(f, "followers", "FollowerConnection", false, false, 4,
@@ -360,7 +364,7 @@ class GithubApiTest {
                                   listOf("Int", "String", "Int", "String", "Boolean", "StarOrder"),
                                   listOf(F, F, F, F, F, F), listOf(T, T, T, T, T, T), listOf("", "", "", "", "", "")))
       34 -> assertTrue(checkField(f, "updatedAt", "DateTime", false, false, 0,
-                                  empty(), empty(), empty(), empty(), empty(),
+                                  emptyList(), emptyList(), emptyList(), emptyList(), emptyList(),
                                   Pair("deprecated", "reason: \"General type updated timestamps will eventually be replaced by other field specific timestamps.\"")))
       35 -> assertTrue(checkField(f, "url", "URI", false, false))
       36 -> assertTrue(checkField(f, "viewerCanFollow", "Boolean", false, false))
@@ -382,11 +386,11 @@ class GithubApiTest {
                    expectIsList: Boolean,
                    expectIsNullable: Boolean,
                    expectArgCount: Int = 0,
-                   expectArgNames: List<String> = empty(),
-                   expectArgTypes: List<String> = empty(),
-                   expectArgIsList: List<Boolean> = empty(),
-                   expectArgNullable: List<Boolean> = empty(),
-                   expectArgDefValue: List<String> = empty(),
+                   expectArgNames: List<String> = emptyList(),
+                   expectArgTypes: List<String> = emptyList(),
+                   expectArgIsList: List<Boolean> = emptyList(),
+                   expectArgNullable: List<Boolean> = emptyList(),
+                   expectArgDefValue: List<String> = emptyList(),
                    expectDirective: Pair<String, String>? = null): Boolean {
       assertEquals(field.name, expectName, "Expected name '$expectName' but was '${field.name}'")
       assertEquals(field.type.name, expectType, "Expected '$expectName' type '$expectType' but was '${field.type.name}'")
@@ -407,8 +411,6 @@ class GithubApiTest {
       }
       return true
     }
-
-    inline fun <reified T : Any> empty() = Collections.emptyList<T>()
   }
 }
 

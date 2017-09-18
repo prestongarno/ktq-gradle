@@ -4321,3 +4321,4 @@ type UserEdge {
 }
 
 scalar X509Certificate
+scalar ID
