@@ -1,9 +1,39 @@
 package com.prestongarno.ktq.compiler.qlang.spec
 
-import com.prestongarno.ktq.*
-import com.prestongarno.ktq.QSchemaType.*
-import com.squareup.kotlinpoet.*
-import java.util.*
+import com.prestongarno.ktq.ArgBuilder
+import com.prestongarno.ktq.CustomScalarArgBuilder
+import com.prestongarno.ktq.CustomScalarConfigStub
+import com.prestongarno.ktq.CustomScalarInitStub
+import com.prestongarno.ktq.CustomScalarListArgBuilder
+import com.prestongarno.ktq.CustomScalarListConfigStub
+import com.prestongarno.ktq.CustomScalarListInitStub
+import com.prestongarno.ktq.InitStub
+import com.prestongarno.ktq.ListArgBuilder
+import com.prestongarno.ktq.ListConfig
+import com.prestongarno.ktq.ListConfigType
+import com.prestongarno.ktq.ListInitStub
+import com.prestongarno.ktq.ListStub
+import com.prestongarno.ktq.QConfigStub
+import com.prestongarno.ktq.QTypeConfigStub
+import com.prestongarno.ktq.QSchemaType.QScalar
+import com.prestongarno.ktq.QSchemaType.QType
+import com.prestongarno.ktq.QSchemaType.QCustomScalar
+import com.prestongarno.ktq.QSchemaType.QCustomScalarList
+import com.prestongarno.ktq.QSchemaType.QScalarList
+import com.prestongarno.ktq.QSchemaType.QTypeList
+import com.prestongarno.ktq.Stub
+import com.prestongarno.ktq.TypeArgBuilder
+import com.prestongarno.ktq.TypeListArgBuilder
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import java.util.Optional
 import kotlin.reflect.KClass
 
 class QField(name: String,

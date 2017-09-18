@@ -3,8 +3,6 @@ package com.prestongarno.ktq.compiler.qlang.spec
 import com.prestongarno.ktq.CustomScalar
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeSpec
-import java.util.*
-import java.util.stream.Collectors
 
 sealed class QScalarType(name: String) : QStatefulType(name, emptyList()) {
 

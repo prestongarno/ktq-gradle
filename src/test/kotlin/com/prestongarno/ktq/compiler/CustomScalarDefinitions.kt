@@ -3,7 +3,11 @@ package com.prestongarno.ktq.compiler
 import org.junit.Test
 import kotlin.test.assertTrue
 import com.google.common.truth.Truth.assertThat
-import com.prestongarno.ktq.*
+import com.prestongarno.ktq.CustomScalar
+import com.prestongarno.ktq.CustomScalarInitStub
+import com.prestongarno.ktq.CustomScalarListInitStub
+import com.prestongarno.ktq.JvmCompile
+import com.prestongarno.ktq.KtqCompileWrapper
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.jvmErasure
 

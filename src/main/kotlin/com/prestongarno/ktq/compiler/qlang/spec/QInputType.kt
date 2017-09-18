@@ -2,7 +2,12 @@ package com.prestongarno.ktq.compiler.qlang.spec
 
 import com.squareup.kotlinpoet.TypeSpec
 import com.prestongarno.ktq.QInput
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.PropertySpec
 
 class QInputType(name: String, fields: List<QField>) : QStatefulType(name, fields) {
   override fun toKotlin(): TypeSpec = create()

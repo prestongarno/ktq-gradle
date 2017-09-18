@@ -1,7 +1,7 @@
 package com.prestongarno.ktq.compiler
 
 import org.junit.Test
-import com.google.common.truth.Truth.*
+import com.google.common.truth.Truth.assertThat
 import kotlin.text.RegexOption.MULTILINE
 
 class InputToOuptut {

@@ -5,8 +5,8 @@ import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
 import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
-import java.util.*
-import kotlin.collections.HashMap
+import java.util.LinkedList
+import java.util.Optional
 import kotlin.collections.HashSet
 
 object Attr {

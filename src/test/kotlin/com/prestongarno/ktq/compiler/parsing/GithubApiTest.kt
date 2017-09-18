@@ -4,7 +4,6 @@ import com.prestongarno.ktq.JvmCompile
 import com.prestongarno.ktq.compiler.BaseTest
 import com.prestongarno.ktq.compiler.QCompiler
 import com.prestongarno.ktq.compiler.QLParser
-import com.prestongarno.ktq.compiler.minusMetadata
 import com.prestongarno.ktq.compiler.qlang.spec.QField
 import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
 import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
@@ -12,7 +11,6 @@ import com.prestongarno.ktq.compiler.qlang.spec.QUnknownInterface
 import com.prestongarno.ktq.compiler.qlang.spec.QUnknownType
 import org.junit.Test
 import java.io.File
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

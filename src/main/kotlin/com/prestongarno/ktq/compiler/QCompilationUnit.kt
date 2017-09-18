@@ -1,10 +1,31 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.*
-import com.prestongarno.ktq.compiler.qlang.spec.*
+import com.prestongarno.ktq.ArgBuilder
+import com.prestongarno.ktq.CustomScalarArgBuilder
+import com.prestongarno.ktq.CustomScalarListArgBuilder
+import com.prestongarno.ktq.ListArgBuilder
+import com.prestongarno.ktq.TypeArgBuilder
+import com.prestongarno.ktq.TypeListArgBuilder
+import com.prestongarno.ktq.compiler.qlang.spec.QCustomScalarType
+import com.prestongarno.ktq.compiler.qlang.spec.QDefinedType
+import com.prestongarno.ktq.compiler.qlang.spec.QEnumDef
+import com.prestongarno.ktq.compiler.qlang.spec.QField
+import com.prestongarno.ktq.compiler.qlang.spec.QInputType
+import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
+import com.prestongarno.ktq.compiler.qlang.spec.QScalarType
 import com.prestongarno.ktq.compiler.qlang.spec.QSchemaType
-import com.squareup.kotlinpoet.*
-import java.util.*
+import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
+import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
+import com.prestongarno.ktq.compiler.qlang.spec.Scalar
+import com.prestongarno.ktq.compiler.qlang.spec.buildArgBuilder
+import com.prestongarno.ktq.compiler.qlang.spec.inputBuilderClassName
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import java.util.Optional
 
 /**
  * Contains instance variables of Lists of different kinds of GraphQL schema declarations, each one with a field
