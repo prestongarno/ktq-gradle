@@ -1,5 +1,5 @@
 buildscript {
-  ext.kotlin_version = '1.1.50'
+  ext.kotlin_version = '1.1.51'
   ext.sourceCompatibility = 1.8
   ext.clientId = 'ktq-gradle'
   ext.projectDescription = 'compiles graphql schemas to kotlin type hierarchies'
@@ -36,7 +36,7 @@ def evalIsRelease = { Project project ->
   else return "-SNAPSHOT"
 }
 
-version = "0.2${evalIsRelease(rootProject)}"
+version = "0.2.1${evalIsRelease(rootProject)}"
 group = 'com.prestongarno.ktq'
 
 
