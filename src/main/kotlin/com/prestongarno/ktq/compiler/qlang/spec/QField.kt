@@ -11,7 +11,6 @@ import com.prestongarno.ktq.InitStub
 import com.prestongarno.ktq.ListConfig
 import com.prestongarno.ktq.ListConfigType
 import com.prestongarno.ktq.ListInitStub
-import com.prestongarno.ktq.ListStub
 import com.prestongarno.ktq.QConfigStub
 import com.prestongarno.ktq.QTypeConfigStub
 import com.prestongarno.ktq.QSchemaType.QScalar
@@ -20,6 +19,14 @@ import com.prestongarno.ktq.QSchemaType.QType
 import com.prestongarno.ktq.QSchemaType.QCustomScalar
 import com.prestongarno.ktq.QSchemaType.QCustomScalarList
 import com.prestongarno.ktq.QSchemaType.QTypeList
+import com.prestongarno.ktq.adapters.BooleanArrayStub
+import com.prestongarno.ktq.adapters.BooleanStub
+import com.prestongarno.ktq.adapters.FloatArrayStub
+import com.prestongarno.ktq.adapters.FloatStub
+import com.prestongarno.ktq.adapters.IntArrayStub
+import com.prestongarno.ktq.adapters.IntStub
+import com.prestongarno.ktq.adapters.StringArrayStub
+import com.prestongarno.ktq.adapters.StringStub
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -74,21 +81,18 @@ class QField(name: String,
         if (this.args.isEmpty()) {
           val stubType: KClass<*> =
               if (!isList) {
-                if (type is QCustomScalarType)
-                  CustomScalarInitStub::class
-                else if (this.type is QScalarType)
-                  throw UnsupportedOperationException()
-                else if (this.type is QEnumDef)
-                  throw UnsupportedOperationException()
-                else
-                  InitStub::class
+                when {
+                  type is QCustomScalarType -> CustomScalarInitStub::class
+                  this.type is QScalarType -> primitiveTypeNameToStubClass(this.type.name, isList = false)
+                  this.type is QEnumDef -> throw UnsupportedOperationException()
+                  else -> InitStub::class
+                }
               } else {
-                if (type is QCustomScalarType)
-                  CustomScalarListInitStub::class
-                else if (this.type is QScalarType || this.type is QEnumDef)
-                  ListStub::class
-                else {
-                  ListInitStub::class
+                when {
+                  type is QCustomScalarType -> CustomScalarListInitStub::class
+                  this.type is QScalarType -> primitiveTypeNameToStubClass(this.type.name, isList = true)
+                  this.type is QEnumDef -> throw UnsupportedOperationException()
+                  else -> ListInitStub::class
                 }
               }
 
@@ -278,4 +282,20 @@ private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputC
         .returns(ClassName.bestGuess(inputClazzName))
         .build()
 
-
+private fun primitiveTypeNameToStubClass(name: String, isList: Boolean = false): KClass<*> {
+  return if (isList) {
+    when (name) {
+      "Int" -> IntStub::class
+      "String" -> StringStub::class
+      "Float" -> FloatStub::class
+      "Boolean" -> BooleanStub::class
+      else -> throw IllegalArgumentException("Unknown type '$name'")
+    }
+  } else when (name) {
+    "Int" -> IntArrayStub::class
+    "String" -> StringArrayStub::class
+    "Float" -> FloatArrayStub::class
+    "Boolean" -> BooleanArrayStub::class
+    else -> throw IllegalArgumentException("Unknown type '$name'")
+  }
+}
