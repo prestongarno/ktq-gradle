@@ -19,14 +19,14 @@ import com.prestongarno.ktq.QSchemaType.QType
 import com.prestongarno.ktq.QSchemaType.QCustomScalar
 import com.prestongarno.ktq.QSchemaType.QCustomScalarList
 import com.prestongarno.ktq.QSchemaType.QTypeList
-import com.prestongarno.ktq.adapters.BooleanArrayStub
-import com.prestongarno.ktq.adapters.BooleanStub
-import com.prestongarno.ktq.adapters.FloatArrayStub
-import com.prestongarno.ktq.adapters.FloatStub
-import com.prestongarno.ktq.adapters.IntArrayStub
-import com.prestongarno.ktq.adapters.IntStub
-import com.prestongarno.ktq.adapters.StringArrayStub
-import com.prestongarno.ktq.adapters.StringStub
+import com.prestongarno.ktq.adapters.BooleanArrayDelegate
+import com.prestongarno.ktq.adapters.BooleanDelegate
+import com.prestongarno.ktq.adapters.FloatArrayDelegate
+import com.prestongarno.ktq.adapters.FloatDelegate
+import com.prestongarno.ktq.adapters.IntegerArrayDelegate
+import com.prestongarno.ktq.adapters.IntegerDelegate
+import com.prestongarno.ktq.adapters.StringArrayDelegate
+import com.prestongarno.ktq.adapters.StringDelegate
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -76,7 +76,8 @@ class QField(name: String,
   override fun toKotlin(): Pair<PropertySpec, Optional<TypeSpec>> {
     if (this.kotlinSpec != null) return kotlinSpec!!
 
-    val typeName = determineTypeName(this)
+    val typeName = if (type !is QScalarType) determineTypeName(this)
+        else ClassName.bestGuess("ArgBuilder")
     val rawTypeName =
         if (this.args.isEmpty()) {
           val stubType: KClass<*> =
@@ -283,19 +284,19 @@ private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputC
         .build()
 
 private fun primitiveTypeNameToStubClass(name: String, isList: Boolean = false): KClass<*> {
-  return if (isList) {
+  return if (!isList) {
     when (name) {
-      "Int" -> IntStub::class
-      "String" -> StringStub::class
-      "Float" -> FloatStub::class
-      "Boolean" -> BooleanStub::class
+      "Int" -> IntegerDelegate::class
+      "String" -> StringDelegate::class
+      "Float" -> FloatDelegate::class
+      "Boolean" -> BooleanDelegate::class
       else -> throw IllegalArgumentException("Unknown type '$name'")
     }
   } else when (name) {
-    "Int" -> IntArrayStub::class
-    "String" -> StringArrayStub::class
-    "Float" -> FloatArrayStub::class
-    "Boolean" -> BooleanArrayStub::class
+    "Int" -> IntegerArrayDelegate::class
+    "String" -> StringArrayDelegate::class
+    "Float" -> FloatArrayDelegate::class
+    "Boolean" -> BooleanArrayDelegate::class
     else -> throw IllegalArgumentException("Unknown type '$name'")
   }
 }
