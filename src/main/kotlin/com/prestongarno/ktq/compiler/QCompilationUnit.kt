@@ -3,9 +3,6 @@ package com.prestongarno.ktq.compiler
 import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.CustomScalarArgBuilder
 import com.prestongarno.ktq.CustomScalarListArgBuilder
-import com.prestongarno.ktq.ListArgBuilder
-import com.prestongarno.ktq.TypeArgBuilder
-import com.prestongarno.ktq.TypeListArgBuilder
 import com.prestongarno.ktq.compiler.qlang.spec.QCustomScalarType
 import com.prestongarno.ktq.compiler.qlang.spec.QDefinedType
 import com.prestongarno.ktq.compiler.qlang.spec.QEnumDef
@@ -94,17 +91,11 @@ class QCompilationUnit(val all: Collection<QSchemaType<*>>) {
             if (!dummy.isList) {
               if (dummy.type is QCustomScalarType)
                 CustomScalarArgBuilder::class
-              else if (dummy.type is QScalarType || dummy.type is QEnumDef)
-                ArgBuilder::class
-              else
-                TypeArgBuilder::class
+              else ArgBuilder::class
             } else {
               if (dummy.type is QCustomScalarType)
                 CustomScalarListArgBuilder::class
-              else if (dummy.type is QScalarType || dummy.type is QEnumDef)
-                ListArgBuilder::class
-              else
-                TypeListArgBuilder::class
+              else ArgBuilder::class
             },
             superclazzType)
             .addModifiers(KModifier.ABSTRACT)

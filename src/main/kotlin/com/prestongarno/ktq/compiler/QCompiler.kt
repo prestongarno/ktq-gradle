@@ -18,9 +18,6 @@ import com.prestongarno.ktq.QConfigStub
 import com.prestongarno.ktq.QInput
 import com.prestongarno.ktq.QSchemaType
 import com.prestongarno.ktq.QTypeConfigStub
-import com.prestongarno.ktq.Stub
-import com.prestongarno.ktq.TypeArgBuilder
-import com.prestongarno.ktq.TypeListArgBuilder
 import com.squareup.kotlinpoet.KotlinFile
 import java.io.File
 import kotlin.reflect.KClass
@@ -131,9 +128,6 @@ private fun getResolvedImports(): List<KClass<*>> {
       QInput::class,
       QSchemaType::class,
       QTypeConfigStub::class,
-      Stub::class,
-      TypeArgBuilder::class,
-      TypeListArgBuilder::class,
       CustomScalar::class,
       CustomScalarInitStub::class,
       CustomScalarListInitStub::class,
@@ -148,7 +142,7 @@ private fun getResolvedImports(): List<KClass<*>> {
 private fun getSchemaTypeHelpers(): List<KClass<*>> =
     listOf(
         QSchemaType.QScalar::class,
-        QSchemaType.QScalarList::class,
+        QSchemaType.QScalarArray::class,
         QSchemaType.QType::class,
         QSchemaType.QTypeList::class,
         QSchemaType.QCustomScalar::class,

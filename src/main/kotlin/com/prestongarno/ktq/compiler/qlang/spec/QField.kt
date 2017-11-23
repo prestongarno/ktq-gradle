@@ -8,22 +8,25 @@ import com.prestongarno.ktq.CustomScalarListArgBuilder
 import com.prestongarno.ktq.CustomScalarListConfigStub
 import com.prestongarno.ktq.CustomScalarListInitStub
 import com.prestongarno.ktq.InitStub
-import com.prestongarno.ktq.ListArgBuilder
 import com.prestongarno.ktq.ListConfig
 import com.prestongarno.ktq.ListConfigType
 import com.prestongarno.ktq.ListInitStub
-import com.prestongarno.ktq.ListStub
 import com.prestongarno.ktq.QConfigStub
 import com.prestongarno.ktq.QTypeConfigStub
 import com.prestongarno.ktq.QSchemaType.QScalar
+import com.prestongarno.ktq.QSchemaType.QScalarArray
 import com.prestongarno.ktq.QSchemaType.QType
 import com.prestongarno.ktq.QSchemaType.QCustomScalar
 import com.prestongarno.ktq.QSchemaType.QCustomScalarList
-import com.prestongarno.ktq.QSchemaType.QScalarList
 import com.prestongarno.ktq.QSchemaType.QTypeList
-import com.prestongarno.ktq.Stub
-import com.prestongarno.ktq.TypeArgBuilder
-import com.prestongarno.ktq.TypeListArgBuilder
+import com.prestongarno.ktq.adapters.BooleanArrayDelegate
+import com.prestongarno.ktq.adapters.BooleanDelegate
+import com.prestongarno.ktq.adapters.FloatArrayDelegate
+import com.prestongarno.ktq.adapters.FloatDelegate
+import com.prestongarno.ktq.adapters.IntegerArrayDelegate
+import com.prestongarno.ktq.adapters.IntegerDelegate
+import com.prestongarno.ktq.adapters.StringArrayDelegate
+import com.prestongarno.ktq.adapters.StringDelegate
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -59,9 +62,7 @@ class QField(name: String,
   }
 
   var builderStatus: BuilderStatus
-    get() = field
   var abstract: Boolean = false
-    get() = field
 
   init {
     builderStatus = if (args.isEmpty()) BuilderStatus.NONE else BuilderStatus.ENCLOSING
@@ -75,24 +76,24 @@ class QField(name: String,
   override fun toKotlin(): Pair<PropertySpec, Optional<TypeSpec>> {
     if (this.kotlinSpec != null) return kotlinSpec!!
 
-    val typeName = determineTypeName(this)
+    val typeName = if (type !is QScalarType) determineTypeName(this)
+        else ClassName.bestGuess("ArgBuilder")
     val rawTypeName =
         if (this.args.isEmpty()) {
           val stubType: KClass<*> =
               if (!isList) {
-                if (type is QCustomScalarType)
-                  CustomScalarInitStub::class
-                else if (this.type is QScalarType || this.type is QEnumDef)
-                  Stub::class
-                else
-                  InitStub::class
+                when {
+                  type is QCustomScalarType -> CustomScalarInitStub::class
+                  this.type is QScalarType -> primitiveTypeNameToStubClass(this.type.name, isList = false)
+                  this.type is QEnumDef -> throw UnsupportedOperationException()
+                  else -> InitStub::class
+                }
               } else {
-                if (type is QCustomScalarType)
-                  CustomScalarListInitStub::class
-                else if (this.type is QScalarType || this.type is QEnumDef)
-                  ListStub::class
-                else {
-                  ListInitStub::class
+                when {
+                  type is QCustomScalarType -> CustomScalarListInitStub::class
+                  this.type is QScalarType -> primitiveTypeNameToStubClass(this.type.name, isList = true)
+                  this.type is QEnumDef -> throw UnsupportedOperationException()
+                  else -> ListInitStub::class
                 }
               }
 
@@ -252,42 +253,28 @@ fun buildArgBuilder(field: QField, superclass: TypeName): TypeSpec.Builder {
 }
 
 private fun determineArgBuilderType(field: QField): KClass<*> =
-    if (!field.isList) {
-      if (field.type is QCustomScalarType)
-        CustomScalarArgBuilder::class
-      else if (field.type is QScalarType)
-        ArgBuilder::class
-      else
-        TypeArgBuilder::class
-    } else {
-      if (field.type is QCustomScalarType)
-        CustomScalarListArgBuilder::class
-      else if (field.type is QScalarType)
-        ListArgBuilder::class
-      else
-        TypeListArgBuilder::class
+    when {
+      field.type is QCustomScalarType -> CustomScalarArgBuilder::class
+      field.type is QCustomScalarType -> CustomScalarListArgBuilder::class
+      else -> ArgBuilder::class
     }
 
 private fun getStubTargetInvoke(field: QField): String =
     (if (!field.isList) {
       if (field.type is QCustomScalarType)
-        "${QCustomScalar::class.simpleName}"
+        "${QCustomScalar::class.simpleName}.stub"
       else if (field.type is QScalarType || field.type is QEnumDef) {
-        "${QScalar::class.simpleName}"
+        "${QScalar::class.simpleName}.${field.type.name.toLowerCase()}Stub"
       } else
-        "${QType::class.simpleName}"
+        "${QType::class.simpleName}.stub"
     } else {
       if (field.type is QCustomScalarType)
-        "${QCustomScalarList::class.simpleName}"
+        "${QCustomScalarList::class.simpleName}.stub"
       else if (field.type is QScalarType || field.type is QEnumDef) {
-        "${QScalarList::class.simpleName}"
+        "${QScalarArray::class.simpleName}.${field.type.name.toLowerCase()}ArrayStub"
       } else
-        QTypeList::class.simpleName
-    }) + "." +
-        (if (field.args.isNotEmpty())
-          "configStub"
-        else
-          "stub")
+        QTypeList::class.simpleName + ".stub"
+    })
 
 private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputClazzName: String) =
     FunSpec.builder(param.name)
@@ -296,4 +283,20 @@ private fun builderTypesMethod(typeName: TypeName, param: QFieldInputArg, inputC
         .returns(ClassName.bestGuess(inputClazzName))
         .build()
 
-
+private fun primitiveTypeNameToStubClass(name: String, isList: Boolean = false): KClass<*> {
+  return if (!isList) {
+    when (name) {
+      "Int" -> IntegerDelegate::class
+      "String" -> StringDelegate::class
+      "Float" -> FloatDelegate::class
+      "Boolean" -> BooleanDelegate::class
+      else -> throw IllegalArgumentException("Unknown type '$name'")
+    }
+  } else when (name) {
+    "Int" -> IntegerArrayDelegate::class
+    "String" -> StringArrayDelegate::class
+    "Float" -> FloatArrayDelegate::class
+    "Boolean" -> BooleanArrayDelegate::class
+    else -> throw IllegalArgumentException("Unknown type '$name'")
+  }
+}

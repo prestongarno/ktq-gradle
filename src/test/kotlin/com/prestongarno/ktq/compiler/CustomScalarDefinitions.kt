@@ -132,7 +132,7 @@ class CustomScalarDefinitions : BaseTest() {
           assertThat(it.minusMetadata())
               .isEqualTo("""
           |object Product : QSchemaType {
-          |  val relatedLinks: CustomScalarListConfigStub<URL, RelatedLinksArgs> by QCustomScalarList.configStub { RelatedLinksArgs(it) }
+          |  val relatedLinks: CustomScalarListConfigStub<URL, RelatedLinksArgs> by QCustomScalarList.stub { RelatedLinksArgs(it) }
           |
           |  class RelatedLinksArgs(args: CustomScalarListArgBuilder) : CustomScalarListArgBuilder by args {
           |    fun first(value: Int): RelatedLinksArgs = apply { addArg("first", value) }
@@ -175,7 +175,7 @@ class CustomScalarDefinitions : BaseTest() {
           assertThat(it.minusMetadata())
               .isEqualTo("""
                 |object Product : QSchemaType {
-                |  val webLink: CustomScalarConfigStub<URL, WebLinkArgs> by QCustomScalar.configStub { WebLinkArgs(it) }
+                |  val webLink: CustomScalarConfigStub<URL, WebLinkArgs> by QCustomScalar.stub { WebLinkArgs(it) }
                 |
                 |  class WebLinkArgs(args: CustomScalarArgBuilder) : CustomScalarArgBuilder by args {
                 |    fun shortened(value: Boolean): WebLinkArgs = apply { addArg("shortened", value) }
@@ -231,7 +231,7 @@ class CustomScalarDefinitions : BaseTest() {
                 |object User : QSchemaType, UniformResourceLocatable, Node {
                 |  override val size: Stub<Int> by QScalar.stub()
                 |
-                |  override val url: CustomScalarConfigStub<URL, UrlArgs> by QCustomScalar.configStub { UrlArgs(it) }
+                |  override val url: CustomScalarConfigStub<URL, UrlArgs> by QCustomScalar.stub { UrlArgs(it) }
                 |
                 |  class UrlArgs(args: CustomScalarArgBuilder) : BaseUrlArgs(args) {
                 |    fun shortened(value: Boolean): UrlArgs = apply { addArg("shortened", value) }
@@ -282,15 +282,15 @@ class CustomScalarDefinitions : BaseTest() {
                 |object URL : CustomScalar
                 |
                 |interface UniformResourceLocatable : QSchemaType {
-                |  val size: Stub<Int>
+                |  val size: IntStub
                 |
                 |  val urls: CustomScalarListConfigStub<URL, BaseUrlsArgs>
                 |}
                 |
                 |object User : QSchemaType, UniformResourceLocatable, Node {
-                |  override val size: Stub<Int> by QScalar.stub()
+                |  override val size: IntStub by QScalar.intStub()
                 |
-                |  override val urls: CustomScalarListConfigStub<URL, UrlsArgs> by QCustomScalarList.configStub { UrlsArgs(it) }
+                |  override val urls: CustomScalarListConfigStub<URL, UrlsArgs> by QCustomScalarList.stub { UrlsArgs(it) }
                 |
                 |  class UrlsArgs(args: CustomScalarListArgBuilder) : BaseUrlsArgs(args) {
                 |    fun shortened(value: Boolean): UrlsArgs = apply { addArg("shortened", value) }
