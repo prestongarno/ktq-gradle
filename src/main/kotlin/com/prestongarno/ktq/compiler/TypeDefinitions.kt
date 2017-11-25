@@ -6,17 +6,17 @@ import com.prestongarno.ktq.QInterface
 import com.prestongarno.ktq.QSchemaType
 import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.QUnionType
-import com.prestongarno.ktq.input.QInput
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser
+import com.prestongarno.ktq.stubs.BooleanArrayDelegate
 import com.prestongarno.ktq.stubs.BooleanDelegate
-import com.prestongarno.ktq.stubs.BooleanStub
+import com.prestongarno.ktq.stubs.FloatArrayDelegate
 import com.prestongarno.ktq.stubs.FloatDelegate
-import com.prestongarno.ktq.stubs.FloatStub
+import com.prestongarno.ktq.stubs.IntArrayDelegate
 import com.prestongarno.ktq.stubs.IntDelegate
-import com.prestongarno.ktq.stubs.IntStub
+import com.prestongarno.ktq.stubs.ScalarArrayDelegate
 import com.prestongarno.ktq.stubs.ScalarDelegate
+import com.prestongarno.ktq.stubs.StringArrayDelegate
 import com.prestongarno.ktq.stubs.StringDelegate
-import com.prestongarno.ktq.stubs.StringStub
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -26,7 +26,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.reflect.KClass
@@ -204,6 +203,7 @@ class InputDef(context: GraphQLSchemaParser.InputTypeDefContext)
 sealed class ScalarType : SchemaType<PlatformTypeContext>(PlatformTypeContext) {
 
   abstract val stubClass: KClass<out ScalarDelegate<*>>
+  abstract val arrayStubClass: KClass<out ScalarArrayDelegate<*>>
 
   override val schemaTypeClass
     get() = throw IllegalArgumentException("No schema stub class for primitives!")
@@ -220,6 +220,7 @@ sealed class ScalarType : SchemaType<PlatformTypeContext>(PlatformTypeContext) {
 
 object IntType : ScalarType() {
   override val stubClass = IntDelegate::class
+  override val arrayStubClass = IntArrayDelegate::class
   override val name: String get() = "Int"
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
@@ -229,6 +230,7 @@ object IntType : ScalarType() {
 
 object StringType : ScalarType() {
   override val stubClass = StringDelegate::class
+  override val arrayStubClass = StringArrayDelegate::class
   override val name: String get() = "String"
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
@@ -238,6 +240,7 @@ object StringType : ScalarType() {
 
 object FloatType : ScalarType() {
   override val stubClass = FloatDelegate::class
+  override val arrayStubClass = FloatArrayDelegate::class
   override val name: String get() = "Float"
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
@@ -247,6 +250,7 @@ object FloatType : ScalarType() {
 
 object BooleanType : ScalarType() {
   override val stubClass = BooleanDelegate::class
+  override val arrayStubClass = BooleanArrayDelegate::class
   override val name: String get() = "Boolean"
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 

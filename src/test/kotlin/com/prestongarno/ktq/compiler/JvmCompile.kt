@@ -36,6 +36,7 @@ object JvmCompile {
         noReflect = true
         noJdk = true
         skipRuntimeVersionCheck = true
+        jvmTarget = "1.8"
         reportPerf = true
       }
       buildDir.deleteOnExit()
@@ -61,6 +62,9 @@ class KtqCompileWrapper(private val root: File) {
   val loader = URLClassLoader(
       listOf(root.toURI().toURL()).toTypedArray(),
       this::class.java.classLoader)
+
+  fun loadClass(name: String, block: KClass<*>.() -> Unit = emptyBlock()) =
+      (loader.loadClass(name)).kotlin.apply(block)
 
   @Suppress("UNCHECKED_CAST") fun loadObject(name: String): QSchemaType =
       (loader.loadClass(name).kotlin as KClass<QSchemaType>).objectInstance!!

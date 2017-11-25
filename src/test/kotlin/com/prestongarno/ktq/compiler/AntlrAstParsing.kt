@@ -1,6 +1,5 @@
 package com.prestongarno.ktq.compiler
 
-import com.google.common.truth.Truth.assertThat
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaLexer
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser
 import org.antlr.v4.runtime.CharStreams
@@ -106,6 +105,5 @@ class AntlrAstParsing {
   }
 }
 
-@Suppress("NOTHING_TO_INLINE")
-inline infix fun Any?.eq(other: Any?) = assertThat(this).isEqualTo(other)
 fun GraphQLSchemaParser.TypeNameContext.value() = this.Name().text
+

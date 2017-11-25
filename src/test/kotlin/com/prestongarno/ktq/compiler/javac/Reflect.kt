@@ -22,12 +22,12 @@ infix fun KClass<*>.implements(superinterface: KClass<*>) {
       "${this.qualifiedName} does not implent ${superinterface.qualifiedName}")
 }
 
-fun KClass<*>.onFunction(name: String, block: KFunction<*>.() -> Unit) {
+fun KClass<*>.func(name: String, block: KFunction<*>.() -> Unit) {
   functions.find { it.name == name }?.apply(block)
       ?: throw IllegalArgumentException("No such function '$name' on class $simpleName")
 }
 
-fun KClass<*>.onProperty(name: String, block: KProperty<*>.() -> Unit) {
+fun KClass<*>.kprop(name: String, block: (KProperty<*>) -> Unit): Unit {
   memberProperties.find { it.name == name }?.apply(block)
       ?: throw IllegalArgumentException("No such property '$name' on class $simpleName")
 }

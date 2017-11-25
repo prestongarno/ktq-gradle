@@ -25,7 +25,7 @@ open class JavacTest {
     compileClassLoader?.delete()
   }
 
-  protected fun compileAndLoad(
+  protected fun jvmCompileAndLoad(
       schema: String,
       packageName: String = "",
       printer: PrintStream? = null,

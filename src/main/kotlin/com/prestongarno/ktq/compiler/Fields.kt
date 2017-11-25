@@ -113,7 +113,7 @@ data class FieldDefinition(override val context: GraphQLSchemaParser.FieldDefCon
       is InputDef -> QInput::class
       is TypeDef -> TypeListStub::class
       is UnionDef -> UnionListStub::class
-      else -> throw IllegalStateException()
+      is ScalarType -> ScalarPrimitives.named[type.name]!!.typeDef.arrayStubClass
     }
     // hell kotlinpoet why do you try to be so helpful with imports
     val baseTypeName = (if (isList) `type name for list field`() else `type name for non-collection field`())
@@ -180,47 +180,6 @@ data class ArgumentDefinition(override val context: GraphQLSchemaParser.Argument
     result = 31 * result + nullable.hashCode()
     result = 31 * result + isList.hashCode()
     return result
-  }
-}
-
-internal class ArgBuilderDef(val field: FieldDefinition, val context: ScopedDeclarationType<*>) : KotlinTypeElement {
-
-  val isInterface = field.isAbstract
-
-  val name = (field.name[0].toUpperCase() + (if (field.name.length > 1) field.name.substring(1) else "") + "Args").let {
-    if (isInterface) it.prepend("Base") else it
-  }
-
-  // spaghetti
-  override fun toKotlin(): TypeSpec {
-    return TypeSpec.classBuilder(name).apply {
-      superclass(ArgBuilder::class)
-      addSuperinterfaces(field.inheritsFrom.map {
-        it.symtab[field.name]!!.name
-        ClassName("", it.name).nestedClass("Base" + name)
-      })
-      // add constructor for non-nullable input arg arguments
-      if (field.arguments.find { !it.nullable } != null) primaryConstructor(FunSpec.constructorBuilder()
-          .addParameters(field.arguments.filterNot {
-            it.nullable
-          }.map {
-            it.toKotlin()
-          }).addCode(CodeBlock.of(field.arguments.filterNot {
-        it.nullable
-      }.joinToString("\n") { """"${it.name}" with $it""" })).build())
-
-      field.arguments.filter { it.nullable }.map {
-        // add nullable properties for config { } dsl block
-        PropertySpec.builder(it.name,
-            it.typeName
-                .asTypeName()
-                .asNullable())
-            .mutable(true)
-            .delegate("arguments")
-            .build()
-      }.let(this::addProperties)
-
-    }.build()
   }
 }
 
