@@ -32,7 +32,7 @@ apply plugin: "com.jfrog.artifactory"
 
 def evalIsRelease = { Project project ->
   if (project.hasProperty("release") &&
-          project.property("release") == "true") return "0.2.1"
+          project.property("release") == "true") return "0.3"
   else return "0.3-SNAPSHOT"
 }
 
@@ -51,16 +51,17 @@ def nonExported = ["org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version",
 
 dependencies {
   compile gradleApi()
-  implementation "com.squareup:kotlinpoet:0.4.0"
-  implementation "com.prestongarno.ktq:ktq-client:0.2.9-SNAPSHOT"
+  implementation "com.squareup:kotlinpoet:0.6.0"
+  implementation "com.prestongarno.ktq:ktq-client:0.3-SNAPSHOT"
+  compile group: 'org.antlr', name: 'antlr4-runtime', version: '4.7'
   compileClasspath nonExported
   testRuntimeClasspath nonExported
   testCompile gradleTestKit()
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile 'junit:junit:4.12'
   testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-  testCompile "com.google.truth:truth:0.28"
-  testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-compiler', version: "$kotlin_version"
+  testCompile group: 'com.google.truth', name: 'truth', version: '0.36'
+  testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-compiler-embeddable', version: "$kotlin_version"
 }
 
 compileKotlin {
@@ -105,7 +106,11 @@ artifacts {
 
 sourceSets {
   main {
-    java { srcDirs = ['src/main/kotlin'] }
+    java {
+      srcDirs = ['src/main/kotlin',
+                 'src/main/gen',
+                 'src/main/java']
+    }
     resources {
       srcDirs = ['src/main/resources']
     }

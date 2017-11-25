@@ -1,161 +1,98 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.compiler.qlang.spec.QField
-import com.prestongarno.ktq.compiler.qlang.spec.QInterfaceDef
-import com.prestongarno.ktq.compiler.qlang.spec.QStatefulType
-import com.prestongarno.ktq.compiler.qlang.spec.QTypeDef
-import com.prestongarno.ktq.compiler.qlang.spec.QUnionTypeDef
-import java.util.LinkedList
-import java.util.Optional
-import kotlin.collections.HashSet
+import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser
+import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser.*
 
-object Attr {
-  fun attributeCompilationUnit(comp: QCompilationUnit): QCompilationUnit {
-    verifyTypesToInterfaces(comp.types, comp.ifaces)
-    attrUnionTypes(comp.unions, comp)
-    attrFieldTypes(comp.ifaces + comp.inputs, comp)
-    attrFieldTypes(comp.types, comp)
-    validateNames(comp)
-    return comp
+/**
+ *
+ * Strategy for entering field inheritance info for kotlinpoet generic args on fields:
+ *   1. enter supertypes to type
+ *   2.   cache names from super to concrete type
+ *   3. enter fields
+ *   4.   get values from local scoped cache
+ *   5.   validate
+ *   6.   create type info
+ *
+ */
+// TODO pass type && supertype to [registerAsSuper] method for diagnostics
+internal fun GraphQLCompiler.attrInheritance() {
+  definitions.on<TypeDef> {
+
+    val fieldSuperTable = fields
+        .map(FieldDefinition::newCache)
+        .toMap(mutableMapOf())
+
+    context.implementationDefs()
+        ?.typeName()
+        ?.map(TypeNameContext::toNameString)
+        ?.map(this@attrInheritance::fromSymtab)
+        ?.onEach { supertype ->
+          supertype.fields
+              .onEach(this::requireOverrides)
+              .map(this::joiningWithImplementation)
+              .map(::second)
+              .map(supertype::registerAsSuper)
+              .forEach(fieldSuperTable::cacheSymbol)
+        }?.toSet()
+        ?.let(this@on::setSupertypes) ?: setSupertypes(emptySet())
+
+    fields.onEach(fieldSuperTable::setFieldInheritanceContext)
+        .forEach(this::assignArgBuilder)
   }
-
-  /**
-   * Complete list of QTypes passed to this method to findType and attribute all QUnknownType
-   * objects (the type each field is tagged with throughout the parsing process)
-   */
-  private fun verifyTypesToInterfaces(types: List<QTypeDef>, ifaces: List<QInterfaceDef>) {
-    val globalIface = ifaces.map { Pair(it.name, it) }.toMap()
-
-    types.forEach { t ->
-      val attrInterfaces: LinkedList<QInterfaceDef> = LinkedList()
-      val fields = t.fields.map { sym -> Pair(sym.name, sym) }.toMap()
-
-      t.interfaces.map { iface ->
-        val attrIf = globalIface[iface.name] ?: throw IllegalArgumentException(
-            "No interface definition '${iface.name}' found (declared on type ${t.name})")
-        attrInterfaces.add(0, attrIf)
-        attrIf.fields.forEach { field ->
-          fields[field.name]?.inheritedFrom?.add(attrIf) ?: throw IllegalArgumentException(
-              "Type '${t.name}' implements ${attrIf.name} but does not contain a field named '${field.name}' in its declaration")
-        }
-        attrIf
-      }.also { t.interfaces = attrInterfaces }
-    }
-  }
-
-  private fun attrUnionTypes(unions: List<QUnionTypeDef>, comp: QCompilationUnit): QCompilationUnit {
-    unions.forEach { union ->
-      union.possibleTypes = union.possibleTypes.map { t ->
-        comp.findType(t.name)
-            ?: throw IllegalArgumentException("Unknown type '${t.name}' in union '$union'")
-      }
-    }
-    return comp
-  }
-
-  private fun attrFieldTypes(types: List<QStatefulType>, comp: QCompilationUnit): QCompilationUnit {
-    types.parallelStream().map { type ->
-      type.fields.map { field ->
-        field.type = comp.findType(field.type.name) ?: throw IllegalArgumentException(
-            "Unknown type '${field.type.name}' on field '${field.name}' in type ${type.name}")
-        field.args.forEach { arg ->
-          arg.type = comp.findType(arg.type.name) ?: throw IllegalArgumentException(
-              "Unknown type '${arg.type.name}' on field '${field.name}', argument '${arg.name}', in type ${type.name}")
-        }
-        attrPolymorphism(field, type)
-      }.filter { it.isPresent }
-    }.flatMap { it.stream() }
-        .map { it.get() }
-        .forEach { conflict ->
-          comp.addConflict(conflict)
-          types.filter { it is QTypeDef
-              && (it.interfaces.containsAny(conflict.second.second))
-              && it.fieldMap[conflict.first.name] != null }
-              .forEach { it.fieldMap[conflict.first.name]!!
-                  .flag(QField.BuilderStatus.TOP_LEVEL) }
-        }
-    return comp
-  }
-
-  fun List<QInterfaceDef>.containsAny(of: List<QInterfaceDef>): Boolean {
-    of.forEach { if (this.contains(it)) return true }
-    return false
-  }
-
-  private fun attrPolymorphism(fieldOnType: QField, type: QStatefulType)
-      : Optional<Pair<QField, Pair<QTypeDef, List<QInterfaceDef>>>> {
-
-    if (type !is QTypeDef)
-      return Optional.empty()
-
-    type.interfaces.map { iface ->
-      iface.fields.filter {
-        it.name == fieldOnType.name
-      }.map {
-        require (it.type == fieldOnType.type) {
-          "Incompatible types: property '${type.name}::${fieldOnType.name}'(${fieldOnType.type.name})" +
-             "inherits '${iface.name}::${it.name}'(${it.type.name})" }
-        Pair(iface, it) }
-    }.flatten().also { dup ->
-      if (dup.size > 1) {
-        if (fieldOnType.args.isNotEmpty()) {
-          fieldOnType.flag(QField.BuilderStatus.TOP_LEVEL)
-          dup.forEach {
-            it.second.flag(QField.BuilderStatus.TOP_LEVEL)
-            it.second.abstract(true) } }
-
-        return Optional.of(Pair(fieldOnType, Pair(type, dup.map { (first) -> first })))
-      }
-    }
-    return Optional.empty()
-  }
-
-  private fun validateNames(comp: QCompilationUnit): QCompilationUnit {
-    comp.all.map {
-      if (KEYWORDS.contains(it.name))
-        it.name = "${it.name}Def"
-    }
-    comp.stateful.values.map {
-      it.fields.map { f ->
-        if (KEYWORDS.contains(f.name))
-          f.name = "${f.name}Val"
-      }
-    }
-    return comp
-  }
-
-  internal val KEYWORDS: HashSet<String> = hashSetOf(
-      "package",
-      "as",
-      "typealias",
-      "class",
-      "this",
-      "super",
-      "val",
-      "var",
-      "fun",
-      "for",
-      "null",
-      "true",
-      "false",
-      "is",
-      "in",
-      "throw",
-      "return",
-      "break",
-      "continue",
-      "object",
-      "if",
-      "try",
-      "else",
-      "while",
-      "do",
-      "when",
-      "interface",
-      "yield",
-      "typeof",
-      "yield",
-      "typeof"
-  )
 }
 
+
+/** get the supertype from schema type symbol table */
+private fun GraphQLCompiler.fromSymtab(sym: String): InterfaceDef {
+  val superTypeDef = symtab[sym] ?: throw IllegalArgumentException("Unknown supertype name $sym on type declaration")
+  return superTypeDef as? InterfaceDef ?: throw IllegalArgumentException("Supertype declaration '$sym' is not an interface type!")
+}
+
+/** explicit lateinit property access */
+private fun TypeDef.setSupertypes(def: Set<InterfaceDef>) {
+  this.supertypes = def
+}
+
+private fun TypeDef.joiningWithImplementation(abstractField: FieldDefinition): Pair<FieldDefinition, FieldDefinition> {
+  val concrete = symtab[abstractField.name] ?: throw IllegalArgumentException("Type ${name} does not override abstract " +
+      "graphql field ${abstractField.name} declared in ${supertypes.flatMap(InterfaceDef::fields).find {
+        it.name == abstractField.name
+      }?.name}")
+  return abstractField to concrete
+}
+
+private fun TypeDef.requireOverrides(abstract: FieldDefinition) {
+  val concrete = symtab[abstract.name] ?: throw IllegalArgumentException(
+      "Abstract field ${abstract.name} not implemented in type $name")
+  require(concrete.run {
+    isList == abstract.isList
+        && nullable == abstract.nullable
+        && type == abstract.type
+        && arguments.containsAll(abstract.arguments)
+  }) { "Field ${abstract.name} does not override supertype property" }
+}
+
+private fun second(pair: Pair<FieldDefinition, FieldDefinition>): FieldDefinition = pair.second
+
+private fun InterfaceDef.registerAsSuper(field: FieldDefinition): Pair<FieldDefinition, InterfaceDef> = field to this
+
+private fun MutableMap<FieldDefinition, MutableSet<InterfaceDef>>.cacheSymbol(pair: Pair<FieldDefinition, InterfaceDef>) {
+  require(!pair.first.isAbstract)
+  this[pair.first] = this[pair.first]?.apply { add(pair.second) } ?: mutableSetOf(pair.second)
+}
+
+private fun MutableMap<FieldDefinition, MutableSet<InterfaceDef>>.setFieldInheritanceContext(field: FieldDefinition) {
+  field.inheritsFrom = this[field]?.toSet() ?: emptySet()
+}
+
+private fun FieldDefinition.setSupertypes(supers: Set<InterfaceDef>?) {
+  this.inheritsFrom = supers ?: emptySet()
+}
+
+private fun GraphQLSchemaParser.TypeNameContext.toNameString(): String = Name().text
+
+private fun FieldDefinition.newCache(): Pair<FieldDefinition, MutableSet<InterfaceDef>> = this to mutableSetOf()
+
+private fun TypeDef.assignArgBuilder(field: FieldDefinition) {
+  if (field.arguments.isNotEmpty()) field.argBuilder = ArgBuilderDef(field, this)
+}
