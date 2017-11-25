@@ -14,7 +14,8 @@ class ToKotlin {
       |}
     """.trimMargin("|")
 
-    compileOut(mockSchema) eq """
+    compileOut(mockSchema, includeImports = false) eq """
+      |
       |object User : QType {
       |  val name: StringDelegate.Query by QSchemaType.QScalar.String.stub()
       |}
@@ -30,7 +31,7 @@ class ToKotlin {
       |}
       |""".trimMargin("|"), includeImports = false)
 
-    val expect = """|
+    val expect = """
        |
        |object User : QType {
        |  val value: FloatDelegate.Query by QSchemaType.QScalar.Float.stub()

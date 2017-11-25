@@ -106,7 +106,11 @@ artifacts {
 
 sourceSets {
   main {
-    java { srcDirs = ['src/main/kotlin'] }
+    java {
+      srcDirs = ['src/main/kotlin',
+                 'src/main/gen',
+                 'src/main/java']
+    }
     resources {
       srcDirs = ['src/main/resources']
     }
