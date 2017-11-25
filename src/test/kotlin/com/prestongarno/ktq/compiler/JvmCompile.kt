@@ -72,14 +72,6 @@ class KtqCompileWrapper(private val root: File) {
   @Suppress("UNCHECKED_CAST") fun loadInterface(name: String): KClass<QSchemaType> =
       (loader.loadClass(name).kotlin as KClass<QSchemaType>)
 
-  fun delete() = Unit ?:
-      loader.urLs.map(URL::toURI)
-          .map(::File)
-          .map(File::walkBottomUp)
-          .flatMap(FileTreeWalk::asIterable)
-          .filter(File::isJavaFile)
-          .filter(File::canWrite)
-          .forEach(File::deleteOnExit)
 }
 
 fun String.asFile() = File(this)

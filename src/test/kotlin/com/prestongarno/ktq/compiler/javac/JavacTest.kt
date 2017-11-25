@@ -21,10 +21,6 @@ open class JavacTest {
 
   private var compileClassLoader: KtqCompileWrapper? = null
 
-  @After fun tearDown() {
-    compileClassLoader?.delete()
-  }
-
   protected fun jvmCompileAndLoad(
       schema: String,
       packageName: String = "",
