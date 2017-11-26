@@ -10,6 +10,7 @@ import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.null
 import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.argumentsMatching
 import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.reifiedArgumentsMatching
 import com.prestongarno.ktq.compiler.javac.constructorParametersContain
+import com.prestongarno.ktq.compiler.javac.constructorParametersMatchExactly
 import com.prestongarno.ktq.compiler.javac.directlyImplements
 import com.prestongarno.ktq.compiler.javac.kprop
 import com.prestongarno.ktq.compiler.javac.requireReturns
@@ -23,6 +24,7 @@ import com.prestongarno.ktq.stubs.StringArrayDelegate
 import com.prestongarno.ktq.stubs.StringDelegate
 import com.prestongarno.ktq.stubs.TypeListStub
 import com.prestongarno.ktq.stubs.TypeStub
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -72,6 +74,10 @@ class SchemaCompile : JavacTest() {
     )
   }
 
+  @After fun deleteClassFiles() {
+    loader.dumpFiles().onEach { it.delete() }
+  }
+
   @Test fun `yelp graphql schema compiles to ktq jvm objects`() =
       loader notEq null
 
@@ -97,11 +103,9 @@ class SchemaCompile : JavacTest() {
 
   @Test fun `graphql string array field returns the correct type`() =
       loader.loadClass("com.yelp.Business") {
-
         kprop("photos") { stringArray ->
           stringArray requireReturns StringArrayDelegate.Query::class
         }
-
       }.ignore()
 
   @Test fun `graphql object type list field return type`() = loader.loadClass("com.yelp.Business") {
@@ -157,18 +161,65 @@ class SchemaCompile : JavacTest() {
    */
   @Test fun `graphql field with arguments correct return type`() = loader.loadClass("com.yelp.Query") {
 
-    val businessArgsClass = loader.loadClass("com.yelp.Query\$BusinessArgs") {
-      this directlyImplements ArgBuilder::class
-    }
-    val businessClass = loader.loadClass("com.yelp.Business") {
-      this directlyImplements QType::class
+    val businessArgsClass = loader.loadClass("com.yelp.Query\$BusinessArgs")
+    businessArgsClass directlyImplements ArgBuilder::class
+
+    val businessClass = loader.loadClass("com.yelp.Business")
+    businessClass directlyImplements QType::class
+
+    kprop("business") {
+      it requireReturns TypeStub.ConfigurableQuery::class
+      it.returnType mustHave argumentsMatching("com.yelp.Business", "com.yelp.Query.BusinessArgs")
+      it.returnType mustHave reifiedArgumentsMatching(businessClass, businessArgsClass)
     }
 
-    kprop("business") { business ->
-      business requireReturns TypeStub.ConfigurableQuery::class
-      business.returnType mustHave argumentsMatching("com.yelp.Business", "com.yelp.Query.BusinessArgs")
-      business.returnType mustHave reifiedArgumentsMatching(businessClass, businessArgsClass)
+  }.ignore()
+
+  /**
+   * Query field spec:
+   *     business_match_best(
+   *              name: String!,
+   *              address1: String,
+   *              address2: String,
+   *              address3: String,
+   *              city: String!,
+   *              state: String!,
+   *              country: String!,
+   *              latitude: Float,
+   *              longitude: Float,
+   *              phone: String,
+   *              postal_code: String
+   *     ): Business
+   */
+  @Test fun `graphql arguments on field is enforced in argbuilder`() = loader.loadClass("com.yelp.Query") {
+
+    val businessBestMatchArgs = loader.loadClass("com.yelp.Query\$Business_match_bestArgs")
+    businessBestMatchArgs directlyImplements ArgBuilder::class
+    businessBestMatchArgs without nullability constructorParametersMatchExactly mapOf(
+        "name" to String::class,
+        "city" to String::class,
+        "state" to String::class,
+        "country" to String::class
+    )
+
+    businessBestMatchArgs.apply {
+      kprop("latitude") requireReturns Float::class
+      kprop("longitude") requireReturns Float::class
+      kprop("phone") requireReturns String::class
+      kprop("postal_code") requireReturns String::class
+      kprop("address1") requireReturns String::class
+      kprop("address2") requireReturns String::class
+      kprop("address3") requireReturns String::class
+    }
+
+    val businessClass = loader.loadClass("com.yelp.Business")
+    businessClass directlyImplements QType::class
+
+    kprop("business_match_best") {
+      it requireReturns TypeStub.ConfigurableQuery::class
+      it.returnType mustHave reifiedArgumentsMatching(businessClass, businessBestMatchArgs)
     }
 
   }.ignore()
 }
+

@@ -9,7 +9,6 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.allSuperclasses
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -31,8 +30,8 @@ fun KClass<*>.func(name: String, block: KFunction<*>.() -> Unit) {
       ?: throw IllegalArgumentException("No such function '$name' on class $simpleName")
 }
 
-fun KClass<*>.kprop(name: String, block: (KProperty<*>) -> Unit): Unit {
-  memberProperties.find { it.name == name }?.apply(block)
+fun KClass<*>.kprop(name: String, block: (KProperty<*>) -> Unit = { }): KProperty<*> {
+  return memberProperties.find { it.name == name }?.apply(block)
       ?: throw IllegalArgumentException("No such property '$name' on class $simpleName")
 }
 
@@ -73,6 +72,29 @@ infix fun ParameterAssertion.constructorParametersContain(match: String): KParam
       }
     } ?: throw IllegalArgumentException("No such constructor parameter '$match'")
 
+infix fun KClass<*>.constructorParametersMatchExactly(arguments: Map<String, KClass<*>>) {
+  ParameterAssertion(this, ParameterQualification.nothingInParticular)
+      .constructorParametersMatchExactly(arguments)
+}
+
+infix fun ParameterAssertion.constructorParametersMatchExactly(arguments: Map<String, KClass<*>>) {
+  val actualParams = clazz.primaryConstructor?.parameters
+      ?.map { it to (it.type.classifier as KClass<*>) }
+      ?: if (arguments.isEmpty())
+          return
+            else
+          throw IllegalArgumentException("Constructor parameters were empty, expected: $arguments")
+  arguments.entries.forEachIndexed { index, entry ->
+    actualParams.getOrNull(index)?.let { (param, actualClazz) ->
+      param.name eq entry.key
+      actualClazz eq entry.value
+      when (qualification) {
+        ParameterQualification.nullability -> require(param.type.isMarkedNullable == positivity)
+      }
+    } ?: throw IllegalArgumentException("No such parameter at index [$index] ${entry.key}: ${entry.value}")
+  }
+}
+
 infix fun KClass<*>.mustHave(qualification: ParameterQualification) =
     ParameterAssertion(this, qualification)
 
@@ -90,6 +112,7 @@ class ParameterQualification private constructor(
 
   companion object {
     val nullability = ParameterQualification("nullable")
+    val nothingInParticular = ParameterQualification("nothingInParticular")
   }
 }
 
