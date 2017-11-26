@@ -1,16 +1,20 @@
 package com.prestongarno.ktq.compiler.javac
 
 import com.prestongarno.ktq.compiler.eq
+import com.prestongarno.ktq.compiler.ignore
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
+import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.KTypeProjection
 import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
-infix fun KClass<*>.directlyImplements(superinterface: KClass<*>) {
+infix fun KClass<*>.directlyImplements(superinterface: KClass<*>) = apply {
   supertypes.find { it.classifier == superinterface }
       ?: throw  IllegalArgumentException(
       "${this.qualifiedName} does not implent ${superinterface.qualifiedName}")
@@ -49,3 +53,77 @@ fun KProperty<*>.typeArgumentsMatch(match: List<String>) {
         require(match[index] == name)
       }
 }
+
+// for making assertions about an attribute's state
+sealed class Qualification(val attributeName: String)
+
+// [$clazz with $qualification] -> ClassReflectionAssertion -> [$it {assertion} $parameter]
+class ParameterAssertion(
+    val clazz: KClass<*>,
+    val qualification: ParameterQualification,
+    val positivity: Boolean = true
+)
+
+infix fun ParameterAssertion.constructorParametersContain(match: String): KParameter =
+    clazz.primaryConstructor?.parameters?.find { it.name == match }?.apply {
+      when (qualification) {
+        ParameterQualification.nullability -> require(type.isMarkedNullable == positivity) {
+          qualification.errorMessage("constructor parameter", match, positivity)
+        }
+      }
+    } ?: throw IllegalArgumentException("No such constructor parameter '$match'")
+
+infix fun KClass<*>.mustHave(qualification: ParameterQualification) =
+    ParameterAssertion(this, qualification)
+
+infix fun KClass<*>.without(qualification: ParameterQualification) =
+    ParameterAssertion(clazz = this, qualification = qualification, positivity = false)
+
+class ParameterQualification private constructor(
+    attributeName: String
+) : Qualification(attributeName) {
+
+  fun errorMessage(target: String, targetName: String, positivity: Boolean): String =
+      "Not true that $target '$targetName' ${
+      if (positivity) "is" else "is not"
+      } $attributeName"
+
+  companion object {
+    val nullability = ParameterQualification("nullable")
+  }
+}
+
+infix fun KClass<*>.hasPropertyNamed(match: String) = apply {
+  memberProperties.find { it.name == match }?.ignore()
+      ?: throw IllegalArgumentException("No such property $match on class $simpleName")
+}
+
+class KTypeSubject(val type: KType) {
+
+  open class Attribute(val verb: (KType) -> Unit)
+
+  companion object {
+    fun argumentsMatching(vararg qualifiedNames: String): Attribute =
+        typeArgumentMatch(qualifiedNames)
+
+    fun reifiedArgumentsMatching(vararg classes: KClass<*>) = Attribute { type ->
+      require(classes.size == type.arguments.size && type.arguments.zip(classes).all { (type, clazz) ->
+        (type.type?.classifier as? KClass<*>)?.let { it == clazz } == true
+      })
+    }
+
+    private val typeArgumentMatch: (Array<out String>) -> Attribute = {
+      Attribute { type ->
+        require(it.size == type.arguments.size && type.arguments.zip(it).all { (type, name) ->
+          type.type?.toString() == name
+        })
+      }
+    }
+  }
+
+}
+
+infix fun KType.mustHave(attribute: KTypeSubject.Attribute) = apply {
+  attribute.verb.invoke(this)
+}
+
