@@ -162,8 +162,8 @@ class EnumDef(context: GraphQLSchemaParser.EnumDefContext)
   }.build()
 
   override val schemaTypeClass = QEnumType::class
-  override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+  override val delegateStubClass: KClass<*> = QSchemaType.QEnum::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QEnumLists::class
 
 }
 

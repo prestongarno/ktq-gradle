@@ -19,8 +19,6 @@ import java.time.Instant
 
 open class JavacTest {
 
-  private var compileClassLoader: KtqCompileWrapper? = null
-
   protected fun jvmCompileAndLoad(
       schema: String,
       packageName: String = "",
@@ -28,23 +26,23 @@ open class JavacTest {
       block: GraphQLCompiler.() -> Unit = { }
   ): KtqCompileWrapper {
 
-    val buildOut = Files.createTempDir().absolutePath.plus(
-        packageName.split(".").joinToString(separator = "/")
-    ).asFile().apply(File::mkdirsOrFail)
+    val tempDir = Files.createTempDir()
 
     val kotlinOut = File.createTempFile(
         "Kotlinpoet${Instant.now().toEpochMilli()}",
         ".kt",
-        buildOut
+        tempDir
     )
         .apply(File::deleteOnExit)
+
     val compilation = GraphQLCompiler(schema = StringSchema(schema))
         .apply(GraphQLCompiler::compile)
         .apply(block)
-    val spec = FileSpec.builder(packageName, "")
+
+    val spec = FileSpec.builder(packageName, kotlinOut.name)
     compilation.definitions.map(SchemaType<*>::toKotlin)
         .forEach { spec.addType(it) }
     spec.build().toString().apply { kotlinOut.writeText(this@apply) }
-    return JvmCompile.exe(kotlinOut, Files.createTempDir().apply(File::deleteOnExit), printer)
+    return JvmCompile.exe(kotlinOut, tempDir, printer)
   }
 }

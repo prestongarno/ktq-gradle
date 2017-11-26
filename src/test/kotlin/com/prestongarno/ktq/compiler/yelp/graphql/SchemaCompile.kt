@@ -101,12 +101,11 @@ class SchemaCompile : JavacTest() {
 
   }.ignore()
 
-  @Test fun `graphql string array field returns the correct type`() =
-      loader.loadClass("com.yelp.Business") {
-        kprop("photos") { stringArray ->
-          stringArray requireReturns StringArrayDelegate.Query::class
-        }
-      }.ignore()
+  @Test fun `graphql string array field returns the correct type`() = loader.loadClass("com.yelp.Business") {
+    kprop("photos") { stringArray ->
+      stringArray requireReturns StringArrayDelegate.Query::class
+    }
+  }.ignore()
 
   @Test fun `graphql object type list field return type`() = loader.loadClass("com.yelp.Business") {
 
