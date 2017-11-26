@@ -58,7 +58,7 @@ type OpenHours {
 #Represents the lack of understanding the developer team at yelp had when
 #they used a type system in order to spam strings by tens as args to fields...
 type Query {
-  business(id: String): Business
+  business(id: String!): Business
   business_match_best(name: String!, address1: String, address2: String, address3: String, city: String!, state: String!, country: String!, latitude: Float, longitude: Float, phone: String, postal_code: String): Business
   business_match_lookup(name: String!, address1: String, address2: String, address3: String, city: String!, state: String!, country: String!, latitude: Float, longitude: Float, phone: String, postal_code: String): Businesses
   reviews(business: String, locale: String): Reviews
