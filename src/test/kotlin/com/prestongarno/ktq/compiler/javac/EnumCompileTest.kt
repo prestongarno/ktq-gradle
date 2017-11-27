@@ -3,13 +3,9 @@ package com.prestongarno.ktq.compiler.javac
 import com.prestongarno.ktq.QEnumType
 import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.compiler.KtqCompileWrapper
-import com.prestongarno.ktq.compiler.eq
 import com.prestongarno.ktq.compiler.ignore
 import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.argumentsMatching
 import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.reifiedArgumentsMatching
-import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.nothingInParticular
-import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.nullability
-import com.prestongarno.ktq.compiler.println
 import com.prestongarno.ktq.stubs.EnumStub
 import org.junit.After
 import org.junit.Before
