@@ -100,6 +100,8 @@ infix fun KClass<*>.mustHave(qualification: ParameterQualification) =
 
 infix fun KClass<*>.without(qualification: ParameterQualification) =
     ParameterAssertion(clazz = this, qualification = qualification, positivity = false)
+infix fun KClass<*>.with(qualification: ParameterQualification) =
+    ParameterAssertion(clazz = this, qualification = qualification, positivity = true)
 
 class ParameterQualification private constructor(
     attributeName: String
@@ -137,6 +139,8 @@ class KTypeSubject(val type: KType) {
 
     private val typeArgumentMatch: (Array<out String>) -> Attribute = {
       Attribute { type ->
+        println(it)
+        println(type)
         require(it.size == type.arguments.size && type.arguments.zip(it).all { (type, name) ->
           type.type?.toString() == name
         })

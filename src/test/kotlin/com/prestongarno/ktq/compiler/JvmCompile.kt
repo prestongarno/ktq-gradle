@@ -35,7 +35,6 @@ object JvmCompile {
         jvmTarget = "1.8"
         reportPerf = true
       }
-      buildDir.deleteOnExit()
       execImpl(printStream?.let {
         PrintingMessageCollector(it, MessageRenderer.PLAIN_RELATIVE_PATHS, true)
       } ?: MessageCollector.NONE, Services.EMPTY, args)

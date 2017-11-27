@@ -1,7 +1,17 @@
 package com.prestongarno.ktq.compiler.javac
 
+import com.prestongarno.ktq.QEnumType
+import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.compiler.KtqCompileWrapper
+import com.prestongarno.ktq.compiler.eq
+import com.prestongarno.ktq.compiler.ignore
+import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.argumentsMatching
+import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.reifiedArgumentsMatching
+import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.nothingInParticular
+import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.nullability
 import com.prestongarno.ktq.compiler.println
+import com.prestongarno.ktq.stubs.EnumStub
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -10,7 +20,6 @@ class EnumCompileTest : JavacTest() {
   lateinit var loader: KtqCompileWrapper
 
   @Before fun generateClasses() {
-    return;
     loader = jvmCompileAndLoad("""
       |
       |enum GraphQLEnum { HOT, NOT }
@@ -18,20 +27,42 @@ class EnumCompileTest : JavacTest() {
       |type Foo {
       |  enumProperty: GraphQLEnum
       |}
-      """.trimMargin("|")) {
-      require(definitions.size == 2)
-    }
+      |
+      |type Bar { enumProp(inputObject: Foo): GraphQLEnum }
+      """.trimMargin("|"))
   }
 
-  /**
-   *
-   * FAILING -> need to write definitions:
-   *   EnumStub.Query
-   *   EnumStub.ConfiguredQuery
-   *   EnumStub.OptionalConfigQuery
-   * instead of the generic [com.prestongarno.ktq.hooks.OptionalConfiguration] etc.
-   */
-  @Test fun `enum exists and has correct options`() {
-    //loader.loadClass("GraphQLEnum")
+  @After fun kill() {
+    loader.classLoader.close()
   }
+
+  @Test fun `enum exists and has correct options`() = loader.loadClass("Foo") {
+    this directlyImplements QType::class
+
+    val enumClazz = loader.loadClass("GraphQLEnum") {
+      this directlyImplements Enum::class
+      this directlyImplements QEnumType::class
+    }
+
+    kprop("enumProperty") { gqlEnum ->
+      gqlEnum requireReturns EnumStub.Query::class
+      gqlEnum.returnType mustHave reifiedArgumentsMatching(enumClazz)
+    }
+  }.ignore()
+
+  @Test fun `enum field with required arguments`() = loader.loadClass("Bar") {
+
+    val enumClazz = loader.loadClass("GraphQLEnum")
+
+    val propArgs = loader.loadClass("Bar\$EnumPropArgs") {
+      kprop("inputObject") { prop ->
+        prop requireReturns loader.loadClass("Foo")
+      }
+    }
+
+    kprop("enumProp") {
+      it requireReturns EnumStub.OptionalConfigQuery::class
+      it.returnType mustHave argumentsMatching("GraphQLEnum", "Bar.EnumPropArgs")
+    }
+  }.ignore()
 }

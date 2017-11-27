@@ -32,17 +32,20 @@ open class JavacTest {
         "Kotlinpoet${Instant.now().toEpochMilli()}",
         ".kt",
         tempDir
-    )
-        .apply(File::deleteOnExit)
+    ).apply { deleteOnExit() }
 
     val compilation = GraphQLCompiler(schema = StringSchema(schema))
         .apply(GraphQLCompiler::compile)
         .apply(block)
 
     val spec = FileSpec.builder(packageName, kotlinOut.name)
+
     compilation.definitions.map(SchemaType<*>::toKotlin)
         .forEach { spec.addType(it) }
-    spec.build().toString().apply { kotlinOut.writeText(this@apply) }
+
+    spec.build().toString().apply {
+      kotlinOut.writeText(this@apply)
+    }
     return JvmCompile.exe(kotlinOut, tempDir, printer)
   }
 }
