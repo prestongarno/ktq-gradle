@@ -1,22 +1,10 @@
-package com.prestongarno.ktq.compiler.yelp.graphql
+package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.QType
-import com.prestongarno.ktq.compiler.KtqCompileWrapper
-import com.prestongarno.ktq.compiler.eq
-import com.prestongarno.ktq.compiler.ignore
-import com.prestongarno.ktq.compiler.javac.JavacTest
-import com.prestongarno.ktq.compiler.javac.ParameterQualification.Companion.nullability
-import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.argumentsMatching
-import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.reifiedArgumentsMatching
-import com.prestongarno.ktq.compiler.javac.constructorParametersContain
-import com.prestongarno.ktq.compiler.javac.constructorParametersMatchExactly
-import com.prestongarno.ktq.compiler.javac.directlyImplements
-import com.prestongarno.ktq.compiler.javac.kprop
-import com.prestongarno.ktq.compiler.javac.requireReturns
-import com.prestongarno.ktq.compiler.javac.mustHave
-import com.prestongarno.ktq.compiler.javac.without
-import com.prestongarno.ktq.compiler.notEq
+import com.prestongarno.ktq.compiler.ParameterQualification.Companion.nullability
+import com.prestongarno.ktq.compiler.KTypeSubject.Companion.argumentsMatching
+import com.prestongarno.ktq.compiler.KTypeSubject.Companion.reifiedArgumentsMatching
 import com.prestongarno.ktq.stubs.BooleanDelegate
 import com.prestongarno.ktq.stubs.FloatDelegate
 import com.prestongarno.ktq.stubs.IntDelegate
@@ -52,7 +40,7 @@ import org.junit.Test
  *    reviews: [Review]
  * }
  */
-class SchemaCompile : JavacTest() {
+class YelpPublicAPICompile : JavacTest() {
 
 
   /** classloader for objects & classes from the schema */
@@ -75,7 +63,9 @@ class SchemaCompile : JavacTest() {
   }
 
   @After fun deleteClassFiles() {
-    loader.dumpFiles().onEach { it.delete() }
+    loader.classLoader.urLs.map { it.path.toString().asFile() }
+        .filter { it.canWrite() && it.exists() }
+        .forEach { it.deleteRecursively() }
   }
 
   @Test fun `yelp graphql schema compiles to ktq jvm objects`() =

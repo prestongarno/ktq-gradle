@@ -1,7 +1,5 @@
-package com.prestongarno.ktq.compiler.javac
+package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.compiler.eq
-import com.prestongarno.ktq.compiler.ignore
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
@@ -139,8 +137,6 @@ class KTypeSubject(val type: KType) {
 
     private val typeArgumentMatch: (Array<out String>) -> Attribute = {
       Attribute { type ->
-        println(it)
-        println(type)
         require(it.size == type.arguments.size && type.arguments.zip(it).all { (type, name) ->
           type.type?.toString() == name
         })

@@ -1,11 +1,9 @@
-package com.prestongarno.ktq.compiler.javac
+package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.QEnumType
 import com.prestongarno.ktq.QType
-import com.prestongarno.ktq.compiler.KtqCompileWrapper
-import com.prestongarno.ktq.compiler.ignore
-import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.argumentsMatching
-import com.prestongarno.ktq.compiler.javac.KTypeSubject.Companion.reifiedArgumentsMatching
+import com.prestongarno.ktq.compiler.KTypeSubject.Companion.argumentsMatching
+import com.prestongarno.ktq.compiler.KTypeSubject.Companion.reifiedArgumentsMatching
 import com.prestongarno.ktq.stubs.EnumStub
 import org.junit.After
 import org.junit.Before
@@ -25,7 +23,7 @@ class EnumCompileTest : JavacTest() {
       |}
       |
       |type Bar { enumProp(inputObject: Foo): GraphQLEnum }
-      """.trimMargin("|"))
+      """.trimMargin("|"), "", System.out)
   }
 
   @After fun kill() {

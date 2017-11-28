@@ -14,10 +14,10 @@ class ToKotlin {
       |}
     """.trimMargin("|")
 
-    compileOut(mockSchema, includeImports = false) eq """
+    compileOut(mockSchema) eq """
       |
-      |object User : QType {
-      |  val name: StringDelegate.Query by QSchemaType.QScalar.String.stub()
+      |object User : com.prestongarno.ktq.QType {
+      |  val name: com.prestongarno.ktq.stubs.StringDelegate.Query by com.prestongarno.ktq.QSchemaType.QScalar.String.stub()
       |}
       |""".trimMargin("|")
   }
@@ -29,16 +29,16 @@ class ToKotlin {
       |  value: Float
       |  friends: [User]
       |}
-      |""".trimMargin("|"), includeImports = false)
+      |""".trimMargin("|"))
 
     val expect = """
-       |
-       |object User : QType {
-       |  val value: FloatDelegate.Query by QSchemaType.QScalar.Float.stub()
-       |
-       |  val friends: TypeListStub.Query<User> by QSchemaType.QTypeList.stub<User>()
-       |}
-       |""".trimMargin("|")
+      |
+      |object User : com.prestongarno.ktq.QType {
+      |  val value: com.prestongarno.ktq.stubs.FloatDelegate.Query by com.prestongarno.ktq.QSchemaType.QScalar.Float.stub()
+      |
+      |  val friends: com.prestongarno.ktq.stubs.TypeListStub.Query<User> by com.prestongarno.ktq.QSchemaType.QTypeList.stub<User>()
+      |}
+      |""".trimMargin("|")
 
     assertThat(result)
         .isEqualTo(expect)

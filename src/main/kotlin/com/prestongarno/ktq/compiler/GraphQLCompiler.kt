@@ -1,7 +1,10 @@
 package com.prestongarno.ktq.compiler
 
+import com.prestongarno.ktq.QSchemaType
+import com.prestongarno.ktq.QUnionType
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaLexer
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser
+import com.squareup.kotlinpoet.FileSpec
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -18,16 +21,20 @@ class GraphQLCompiler(
     private val scope: Configuration.() -> Unit = { /* nothing */ }
 ) {
 
+  val config = Configuration.fromContext(schema, scope)
+
   /** This is kept in sync by the [GraphQLCompiler.definitions] variable. Do NOT add definitions here */
   internal val symtab: MutableMap<String, SchemaType<*>> = ScalarPrimitives.values().map {
     it.typeDef.name to it.typeDef
   }.toMap(mutableMapOf())
 
-  internal val definitions: MutableSet<SchemaType<*>> by Delegates.observable(mutableSetOf()) { _, _, newValue ->
+  private val definitions: MutableSet<SchemaType<*>> by Delegates.observable(mutableSetOf()) { _, _, newValue ->
     newValue.filter { symtab[it.name] == null }.forEach { defn ->
       symtab[defn.name] = defn
     }
   }
+
+  val schemaTypes get() = definitions.toSet()
 
   private val schemaRules = listOf<SchemaRule>(
       `duplicate type names check`(),
@@ -40,8 +47,6 @@ class GraphQLCompiler(
   )
 
   fun compile() {
-
-    val config = Configuration.fromContext(schema, scope)
 
     // Get schema
     val input: CharStream = when (config.schema) {
@@ -72,6 +77,37 @@ class GraphQLCompiler(
 
     schemaRules.onEach { it(definitions) }
     inspectFields(*scopedSymbolRules.toTypedArray())
+  }
+
+  /**
+   * Fix for [UnionDef] class signature for implicit delegation
+   */
+  fun toKotlinApi(): String {
+
+    if (definitions.isEmpty())
+      compile()
+    if (definitions.isEmpty())
+      throw IllegalArgumentException("No schema types defined")
+
+    val specs = definitions.map(SchemaType<*>::toKotlin)
+
+    val sourceClasses = specs.map {
+      var exact = it.toString()
+
+      if (it.superinterfaces.find {
+        it.toString().contains(UnionDef.CLASS_DELEGATE_MARKER)
+      } != null) exact = exact.replace(UnionDef.CLASS_DELEGATE_MARKER,
+          " by ${QUnionType::class.qualifiedName!!}.create()")
+          .replace("^import.*\n".toRegex(), "")
+
+      return@map exact
+    }.joinToString("\n\n") { it }
+
+    val metadata = FileSpec.builder(config.packageName, config.kotlinFileName).apply {
+      definitions.forEach { addType(it.toKotlin()) }
+    }.build().let { if (it.packageName.isNotEmpty()) "package ${it.packageName}\n\n" else "\n" }
+
+    return metadata + sourceClasses
   }
 
   private fun attrFieldTypes() = definitions.filterIsInstance<ScopedDeclarationType<*>>()
@@ -107,7 +143,11 @@ class GraphQLCompiler(
   }
 
   class Configuration private constructor(val schema: Schema) {
-    // todo compilation options here for gradle build config
+
+    var packageName: String = ""
+
+    var kotlinFileName: String = "GraphQL.kt"
+
     companion object {
       internal fun fromContext(schema: Schema, scope: Configuration.() -> Unit): Configuration =
           Configuration(schema).apply(scope)

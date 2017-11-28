@@ -15,8 +15,8 @@ class InheritanceTests {
     val compilation = GraphQLCompiler(StringSchema(mockSchema))
     compilation.compile()
 
-    compilation.definitions.size eq 1
-    compilation.definitions.first().apply {
+    compilation.schemaTypes.size eq 1
+    compilation.schemaTypes.first().apply {
 
       name eq "Foo"
       this as TypeDef
@@ -110,10 +110,10 @@ class InheritanceTests {
       """.trimMargin("|")
     val compilation = GraphQLCompiler(StringSchema(mockSchema))
     compilation.compile()
-    compilation.definitions.find { it.name == "Foo" }?.apply {
+    compilation.schemaTypes.find { it.name == "Foo" }?.apply {
       this as TypeDef
       supertypes.size eq 2
-      compilation.definitions.filterNot {
+      compilation.schemaTypes.filterNot {
         this === it
       }.let { withoutThis ->
         require(supertypes.containsAll(withoutThis))
@@ -158,7 +158,7 @@ class InheritanceTests {
 
 
 fun GraphQLCompiler.prettyPrintScopes(): String {
-  return definitions.filterIsInstance<ScopedDeclarationType<*>>().joinToString("\n") {
+  return schemaTypes.filterIsInstance<ScopedDeclarationType<*>>().joinToString("\n") {
     it.name + it.symtab.entries.joinToString(prefix = "\n", separator = ",\n") {
       it.value.let {
         "${it.name}(${it.arguments.joinToString(", ") {

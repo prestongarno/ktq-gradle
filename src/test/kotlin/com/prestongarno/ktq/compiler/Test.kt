@@ -27,34 +27,13 @@ inline fun <reified T> assertThrows(block: () -> Unit): ThrowableSubject {
   throw AssertionError("Expected ${T::class.simpleName}")
 }
 
-fun compileGraphQl(schema: String, block: (GraphQLCompiler.() -> Unit)? = null) =
-    GraphQLCompiler(StringSchema(schema)).apply {
-      compile()
-      block?.invoke(this)
-    }.definitions
-
-fun compileOut(schema: String, includeImports: Boolean = true, block: (GraphQLCompiler.() -> Unit)? = null): String =
-    compileGraphQl(schema, block).toFileSpec().let {
-      val target = StringBuilder()
-      it.writeTo(target)
-      target.toString() // smh kotlinpoet
-          .let {
-            if (includeImports) it else
-              it.replace("^import.*\n".toRegex(RegexOption.MULTILINE), "")
-                  .replace("^package.*\n".toRegex(RegexOption.MULTILINE), "")
-                  .replace("^\n\n", "")
-          }
-    }
-
-fun Set<SchemaType<*>>.toFileSpec(baseName: String = "GraphQLSchema"): FileSpec =
-    FileSpec.builder("", "$baseName${Instant.now().toEpochMilli()}.kt").apply {
-      map(SchemaType<*>::toKotlin).let(this::addTypes)
-    }.build()
+fun compileOut(schema: String, block: (GraphQLCompiler.() -> Unit) = emptyBlock()): String =
+    GraphQLCompiler(StringSchema(schema))
+        .apply(block)
+        .toKotlinApi()
 
 // Not a test case without a functional println
 fun Any?.println() = println(this)
-
-private fun FileSpec.Builder.addTypes(types: Iterable<TypeSpec>) = types.forEach { addType(it) }
 
 fun <T> emptyBlock(): T.() -> Unit = Block.empty<T>()
 

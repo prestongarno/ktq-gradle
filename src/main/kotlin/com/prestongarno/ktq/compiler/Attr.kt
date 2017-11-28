@@ -16,7 +16,7 @@ import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser.*
  */
 // TODO pass type && supertype to [registerAsSuper] method for diagnostics
 internal fun GraphQLCompiler.attrInheritance() {
-  definitions.on<TypeDef> {
+  schemaTypes.on<TypeDef> {
 
     val fieldSuperTable = fields
         .map(FieldDefinition::newCache)

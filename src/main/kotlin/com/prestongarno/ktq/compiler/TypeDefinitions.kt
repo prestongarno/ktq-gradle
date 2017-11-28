@@ -3,6 +3,7 @@ package com.prestongarno.ktq.compiler
 import com.prestongarno.ktq.CustomScalar
 import com.prestongarno.ktq.QEnumType
 import com.prestongarno.ktq.QInterface
+import com.prestongarno.ktq.QModel
 import com.prestongarno.ktq.QSchemaType
 import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.QUnionType
@@ -111,7 +112,9 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
   lateinit var possibilities: Set<TypeDef>
 
   override fun toKotlin(): TypeSpec = TypeSpec.objectBuilder(name).apply {
-    addSuperinterface(schemaTypeClass) // TODO use submodule of my branch for class delegation
+    addSuperinterface(schemaTypeClass.qualifiedName
+        .let { it + CLASS_DELEGATE_MARKER }
+        .asTypeName()) // TODO use delegate supporting vers
     possibilities.map { type ->
 
       FunSpec.builder("on" + type.name[0].toUpperCase() + type.name.let {
@@ -119,11 +122,10 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
       }).apply {
         // ugly java calling code wtf
         addParameter(ParameterSpec.builder("init",
-            LambdaTypeName.get(returnType = ParameterizedTypeName.get(ClassName.bestGuess("QModel"),
+            LambdaTypeName.get(returnType = ParameterizedTypeName.get(QModel::class.asTypeName(),
                 type.name.asTypeName()))).build())
         addCode("on(init)")
       }.build()
-
     }.forEach {
       addFunction(it)
     }
@@ -133,6 +135,10 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
   override val schemaTypeClass = QUnionType::class
   override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
   override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+
+  companion object {
+    val CLASS_DELEGATE_MARKER = "_BY_UNION_CLASS_DELEGATE_"
+  }
 }
 
 class ScalarDef(context: GraphQLSchemaParser.ScalarDefContext)
