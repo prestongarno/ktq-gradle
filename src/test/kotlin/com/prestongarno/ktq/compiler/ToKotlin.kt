@@ -36,7 +36,7 @@ class ToKotlin {
       |object User : com.prestongarno.ktq.QType {
       |  val value: com.prestongarno.ktq.stubs.FloatDelegate.Query by com.prestongarno.ktq.QSchemaType.QScalar.Float.stub()
       |
-      |  val friends: com.prestongarno.ktq.stubs.TypeListStub.Query<User> by com.prestongarno.ktq.QSchemaType.QTypeList.stub<User>()
+      |  val friends: com.prestongarno.ktq.stubs.TypeListStub.Query<User> by com.prestongarno.ktq.QSchemaType.QTypes.List.stub<User>()
       |}
       |""".trimMargin("|")
 

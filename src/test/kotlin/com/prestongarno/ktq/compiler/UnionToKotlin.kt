@@ -1,6 +1,5 @@
 package com.prestongarno.ktq.compiler
 
-import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class UnionToKotlinTest : JavacTest() {
@@ -41,6 +40,23 @@ class UnionToKotlinTest : JavacTest() {
         """.trimIndent()
 
     result eq expect
-    jvmCompileAndLoad(schema.trimMargin("|"), "com.test")
+
+    val loader = jvmCompileAndLoad(schema.trimMargin("|"), "com.test").apply {
+
+      loadClass("com.test.Actor") {
+
+        func("onDroid") { it.parameters[0].toString() eq "instance of fun com.test.Actor.onDroid(" +
+                  "() -> com.prestongarno.ktq.QModel<com.test.Droid>): kotlin.Unit" }
+
+        func("onJedi") { it.parameters[0].toString() eq "instance of fun com.test.Actor.onJedi(" +
+                  "() -> com.prestongarno.ktq.QModel<com.test.Jedi>): kotlin.Unit" }
+
+      }
+    }
   }
+
+
+
+
+
 }

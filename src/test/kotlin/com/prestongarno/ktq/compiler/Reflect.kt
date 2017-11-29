@@ -23,7 +23,7 @@ infix fun KClass<*>.implements(superinterface: KClass<*>) {
       "${this.qualifiedName} does not implent ${superinterface.qualifiedName}")
 }
 
-fun KClass<*>.func(name: String, block: KFunction<*>.() -> Unit) {
+fun KClass<*>.func(name: String, block: (KFunction<*>) -> Unit) {
   functions.find { it.name == name }?.apply(block)
       ?: throw IllegalArgumentException("No such function '$name' on class $simpleName")
 }

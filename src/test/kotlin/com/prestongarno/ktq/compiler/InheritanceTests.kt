@@ -1,6 +1,5 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.indent
 import org.junit.Test
 
 class InheritanceTests {
@@ -169,7 +168,7 @@ fun GraphQLCompiler.prettyPrintScopes(): String {
           }
         }}): ${it.typeName}"
       }
-    }.indent(1)
+    }.replace("^".toRegex(), "  ")
   }
 
 }

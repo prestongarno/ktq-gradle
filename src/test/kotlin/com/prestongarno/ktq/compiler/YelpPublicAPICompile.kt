@@ -40,33 +40,25 @@ import org.junit.Test
  *    reviews: [Review]
  * }
  */
-class YelpPublicAPICompile : JavacTest() {
+class YelpPublicAPICompile {
 
 
-  /** classloader for objects & classes from the schema */
-  lateinit var loader: KtqCompileWrapper
-
-  @Before fun compileYelpSchemaAndLoad() {
-    val schemaSource = this::class.java
-        .classLoader
-        .getResourceAsStream("yelp.graphqls")
-        .reader()
-        .readLines()
-        .joinToString("\n") { it }
-
-    schemaSource.isNotEmpty() eq true
-
-    loader = jvmCompileAndLoad(
-        schema = schemaSource,
-        packageName = "com.yelp"
-    )
-  }
-
-  @After fun deleteClassFiles() {
-    loader.classLoader.urLs.map { it.path.toString().asFile() }
-        .filter { it.canWrite() && it.exists() }
-        .forEach { it.deleteRecursively() }
-  }
+  companion object : JavacTest() {
+    /** classloader for objects & classes from the schema */
+    val loader: KtqCompileWrapper = this::class.java
+      .classLoader
+      .getResourceAsStream("yelp.graphqls")
+      .reader()
+      .readLines()
+      .joinToString("\n") { it }.apply {
+        isNotEmpty() eq true
+      }.let {
+        jvmCompileAndLoad(
+            schema = it,
+            packageName = "com.yelp"
+            , printer = System.out)
+        }
+      }
 
   @Test fun `yelp graphql schema compiles to ktq jvm objects`() =
       loader notEq null

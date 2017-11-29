@@ -1,7 +1,6 @@
 package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.ArgBuilder
-import com.prestongarno.ktq.prepend
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
