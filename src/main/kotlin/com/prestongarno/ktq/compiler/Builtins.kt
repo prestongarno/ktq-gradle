@@ -11,3 +11,5 @@ enum class ScalarPrimitives(val typeDef: ScalarType) {
   }
 }
 
+
+internal fun String.prepend(prefix: String) = prefix + this

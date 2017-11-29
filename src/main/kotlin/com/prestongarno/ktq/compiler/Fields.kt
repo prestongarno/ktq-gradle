@@ -1,9 +1,7 @@
 package com.prestongarno.ktq.compiler
 
-import com.prestongarno.ktq.ArgBuilder
 import com.prestongarno.ktq.input.QInput
 import com.prestongarno.ktq.org.antlr4.gen.GraphQLSchemaParser
-import com.prestongarno.ktq.prepend
 import com.prestongarno.ktq.stubs.CustomScalarListStub
 import com.prestongarno.ktq.stubs.CustomScalarStub
 import com.prestongarno.ktq.stubs.EnumListStub
@@ -15,14 +13,11 @@ import com.prestongarno.ktq.stubs.TypeStub
 import com.prestongarno.ktq.stubs.UnionListStub
 import com.prestongarno.ktq.stubs.UnionStub
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.antlr.v4.runtime.ParserRuleContext

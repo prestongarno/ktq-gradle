@@ -1,6 +1,5 @@
 package com.prestongarno.ktq.compiler
 
-import com.google.common.io.Files
 import com.prestongarno.ktq.QSchemaType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -8,12 +7,9 @@ import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.config.Services
-import org.jetbrains.kotlin.incremental.isJavaFile
 import java.io.File
 import java.io.PrintStream
-import java.net.URL
 import java.net.URLClassLoader
-import java.time.Instant
 import kotlin.reflect.KClass
 
 object JvmCompile {
@@ -39,7 +35,6 @@ object JvmCompile {
         jvmTarget = "1.8"
         reportPerf = true
       }
-      buildDir.deleteOnExit()
       execImpl(printStream?.let {
         PrintingMessageCollector(it, MessageRenderer.PLAIN_RELATIVE_PATHS, true)
       } ?: MessageCollector.NONE, Services.EMPTY, args)
@@ -59,18 +54,25 @@ fun File.getFileTree(): List<File> {
 
 class KtqCompileWrapper(private val root: File) {
 
-  val loader = URLClassLoader(
+  val classLoader = URLClassLoader(
       listOf(root.toURI().toURL()).toTypedArray(),
       this::class.java.classLoader)
 
   fun loadClass(name: String, block: KClass<*>.() -> Unit = emptyBlock()) =
-      (loader.loadClass(name)).kotlin.apply(block)
+      (classLoader.loadClass(name)).kotlin.apply(block)
 
   @Suppress("UNCHECKED_CAST") fun loadObject(name: String): QSchemaType =
-      (loader.loadClass(name).kotlin as KClass<QSchemaType>).objectInstance!!
+      (classLoader.loadClass(name).kotlin as KClass<QSchemaType>).objectInstance!!
 
   @Suppress("UNCHECKED_CAST") fun loadInterface(name: String): KClass<QSchemaType> =
-      (loader.loadClass(name).kotlin as KClass<QSchemaType>)
+      (classLoader.loadClass(name).kotlin as KClass<QSchemaType>)
+
+  fun dumpFiles(): Iterable<File> =
+      classLoader.urLs.flatMap {
+        it.toURI().rawPath!!.asFile().getFileTree()
+      }.sortedBy { it.path.length }
+          .asIterable()
+
 
 }
 

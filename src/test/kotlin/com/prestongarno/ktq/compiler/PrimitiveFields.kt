@@ -1,4 +1,4 @@
-package com.prestongarno.ktq.compiler.javac
+package com.prestongarno.ktq.compiler
 
 import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.stubs.BooleanDelegate

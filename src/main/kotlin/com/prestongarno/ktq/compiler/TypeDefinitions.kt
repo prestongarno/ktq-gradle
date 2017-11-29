@@ -3,6 +3,7 @@ package com.prestongarno.ktq.compiler
 import com.prestongarno.ktq.CustomScalar
 import com.prestongarno.ktq.QEnumType
 import com.prestongarno.ktq.QInterface
+import com.prestongarno.ktq.QModel
 import com.prestongarno.ktq.QSchemaType
 import com.prestongarno.ktq.QType
 import com.prestongarno.ktq.QUnionType
@@ -78,7 +79,7 @@ class TypeDef(context: GraphQLSchemaParser.TypeDefContext)
 
   override val schemaTypeClass = QType::class
   override val delegateStubClass = QSchemaType.QTypes::class
-  override val delegateListStubClass = QSchemaType.QTypeList::class
+  override val delegateListStubClass = QSchemaType.QTypes.List::class
 }
 
 class InterfaceDef(context: GraphQLSchemaParser.InterfaceDefContext)
@@ -99,7 +100,7 @@ class InterfaceDef(context: GraphQLSchemaParser.InterfaceDefContext)
 
   override val schemaTypeClass = QInterface::class
   override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaces.List::class
 
 }
 
@@ -111,7 +112,9 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
   lateinit var possibilities: Set<TypeDef>
 
   override fun toKotlin(): TypeSpec = TypeSpec.objectBuilder(name).apply {
-    addSuperinterface(schemaTypeClass) // TODO use submodule of my branch for class delegation
+    addSuperinterface(schemaTypeClass.qualifiedName
+        .let { it + CLASS_DELEGATE_MARKER }
+        .asTypeName()) // TODO use delegate supporting vers
     possibilities.map { type ->
 
       FunSpec.builder("on" + type.name[0].toUpperCase() + type.name.let {
@@ -119,11 +122,10 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
       }).apply {
         // ugly java calling code wtf
         addParameter(ParameterSpec.builder("init",
-            LambdaTypeName.get(returnType = ParameterizedTypeName.get(ClassName.bestGuess("QModel"),
+            LambdaTypeName.get(returnType = ParameterizedTypeName.get(QModel::class.asTypeName(),
                 type.name.asTypeName()))).build())
         addCode("on(init)")
       }.build()
-
     }.forEach {
       addFunction(it)
     }
@@ -132,7 +134,11 @@ class UnionDef(context: GraphQLSchemaParser.UnionDefContext)
 
   override val schemaTypeClass = QUnionType::class
   override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaces.List::class
+
+  companion object {
+    val CLASS_DELEGATE_MARKER = "_BY_UNION_CLASS_DELEGATE_"
+  }
 }
 
 class ScalarDef(context: GraphQLSchemaParser.ScalarDefContext)
@@ -146,7 +152,7 @@ class ScalarDef(context: GraphQLSchemaParser.ScalarDefContext)
 
   override val schemaTypeClass = CustomScalar::class
   override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaces.List::class
 }
 
 class EnumDef(context: GraphQLSchemaParser.EnumDefContext)
@@ -162,8 +168,8 @@ class EnumDef(context: GraphQLSchemaParser.EnumDefContext)
   }.build()
 
   override val schemaTypeClass = QEnumType::class
-  override val delegateStubClass: KClass<*> = QSchemaType.QInterfaces::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QInterfaceLists::class
+  override val delegateStubClass: KClass<*> = QSchemaType.QEnum::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QEnum.List::class
 
 }
 
@@ -225,7 +231,7 @@ object IntType : ScalarType() {
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
   override val delegateStubClass: KClass<*> = QSchemaType.QScalar.Int::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QScalarArray.Int::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QScalar.List.Int::class
 }
 
 object StringType : ScalarType() {
@@ -235,7 +241,7 @@ object StringType : ScalarType() {
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
   override val delegateStubClass: KClass<*> = QSchemaType.QScalar.String::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QScalarArray.String::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QScalar.List.String::class
 }
 
 object FloatType : ScalarType() {
@@ -245,7 +251,7 @@ object FloatType : ScalarType() {
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
   override val delegateStubClass: KClass<*> = QSchemaType.QScalar.Float::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QScalarArray.Float::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QScalar.List.Float::class
 }
 
 object BooleanType : ScalarType() {
@@ -255,7 +261,7 @@ object BooleanType : ScalarType() {
   override fun toKotlin(): TypeSpec = throw UnsupportedOperationException()
 
   override val delegateStubClass: KClass<*> = QSchemaType.QScalar.Boolean::class
-  override val delegateListStubClass: KClass<*> = QSchemaType.QScalarArray.Boolean::class
+  override val delegateListStubClass: KClass<*> = QSchemaType.QScalar.List.Boolean::class
 }
 
 object PlatformTypeContext : ParserRuleContext()
